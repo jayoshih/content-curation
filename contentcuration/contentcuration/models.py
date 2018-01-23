@@ -906,3 +906,22 @@ class Invitation(models.Model):
     class Meta:
         verbose_name = _("Invitation")
         verbose_name_plural = _("Invitations")
+
+
+MESSAGE_TYPES = ["activity", "instructions", "message", "prompt", "reflection"]
+
+class Story(models.Model):
+    """ Invitation to edit channel """
+    title = models.CharField(max_length=200)
+    storage_hash = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    annotation = models.TextField(blank=True, null=True)
+
+class StoryItem(models.Model):
+    story = models.ForeignKey(Story, related_name='story_item', null=True)
+    order = models.IntegerField(default=1, verbose_name=_("sort order"))
+    item_type = models.CharField(max_length=50)
+    message_type = models.CharField(max_length=50)
+    node_id = models.CharField(max_length=50)
+    actions = models.TextField(blank=True, default="{}")
+    is_supplementary = models.BooleanField(default=False)
