@@ -795,3 +795,18 @@ class InvitationSerializer(BulkSerializerMixin, serializers.ModelSerializer):
         model = Invitation
         fields = (
             'id', 'invited', 'email', 'sender', 'channel', 'first_name', 'last_name', 'share_mode', 'channel_name')
+
+
+class StoryItemSerializer(BulkSerializerMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = Invitation
+        fields = ('id', 'order', 'item_type', 'message_type', 'node_id', 'actions', 'is_supplementary')
+
+
+class StorySerializer(BulkSerializerMixin, serializers.ModelSerializer):
+    items = StoryItemSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Invitation
+        fields = ('id', 'title', 'description', 'annotation', 'items')

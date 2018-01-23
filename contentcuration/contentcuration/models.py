@@ -907,21 +907,23 @@ class Invitation(models.Model):
         verbose_name = _("Invitation")
         verbose_name_plural = _("Invitations")
 
-
+ITEM_TYPES = ["content", "message"]
 MESSAGE_TYPES = ["activity", "instructions", "message", "prompt", "reflection"]
 
 class Story(models.Model):
     """ Invitation to edit channel """
     title = models.CharField(max_length=200)
-    storage_hash = models.CharField(max_length=50)
+    storage_hash = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     annotation = models.TextField(blank=True, null=True)
+    channel = models.ForeignKey(Channel, related_name='channel', null=True)
 
 class StoryItem(models.Model):
     story = models.ForeignKey(Story, related_name='story_item', null=True)
     order = models.IntegerField(default=1, verbose_name=_("sort order"))
     item_type = models.CharField(max_length=50)
-    message_type = models.CharField(max_length=50)
-    node_id = models.CharField(max_length=50)
-    actions = models.TextField(blank=True, default="{}")
+    message_type = models.CharField(max_length=50, blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+    node_id = models.CharField(max_length=50, blank=True, null=True)
+    actions = models.TextField(default="{}")
     is_supplementary = models.BooleanField(default=False)
