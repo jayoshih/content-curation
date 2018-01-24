@@ -1203,7 +1203,6 @@ var StoryModel = BaseModel.extend({
                 url: window.Urls.zip_story(self.id),
                 error:reject,
                 success: function(content_node) {
-                    console.log(content_node)
                     var new_story = new ContentNodeModel(JSON.parse(content_node));
                     var collection = new ContentNodeCollection();
                     collection.add(new_story);

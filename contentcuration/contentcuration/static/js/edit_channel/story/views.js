@@ -95,6 +95,7 @@ var StoryModalView = BaseViews.BaseModalView.extend({
     $trs: MESSAGES,
 
     initialize: function(options) {
+        _.bindAll(this, "selected");
         this.modal = true;
         this.selecting = options.selecting;
         this.onselect = options.onselect;
@@ -104,8 +105,12 @@ var StoryModalView = BaseViews.BaseModalView.extend({
             modal : this,
             model:options.channel,
             selecting: this.selecting,
-            onselect: this.onselect
+            onselect: this.selected
         });
+    },
+    selected: function(collection) {
+        this.onselect(collection);
+        this.close();
     }
 });
 
@@ -198,10 +203,12 @@ var StoryListItem = BaseViews.BaseListEditableItemView.extend({
     },
     zip_content: function() {
         var self = this;
-        this.model.zip_story().then(function(collection) {
-            self.onselect(collection);
-        })
-
+        this.display_load("Zipping story...", function(load_resolve, load_reject){
+            self.model.zip_story().then(function(collection) {
+                self.onselect(collection);
+                load_resolve(true);
+            }).catch(load_reject);
+        });
     }
 });
 
