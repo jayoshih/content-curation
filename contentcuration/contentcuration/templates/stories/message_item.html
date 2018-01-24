@@ -1,0 +1,20 @@
+{% extends "stories/base.html" %}
+
+{% block maincontent %}
+
+<div class="container">
+
+    <div id="maindiv">
+
+      <div class="maincontent message-kind {{message_type}}-message_type">
+
+          <div class="message_html">
+            {{ message_html|safe}}
+          </div>
+
+      </div>
+
+    </div>
+
+</div><!-- /.container -->
+{% endblock %}

@@ -36,9 +36,20 @@ def get_story_items(request, story_id):
 @permission_classes((IsAuthenticated,))
 def zip_story(request, story_id, parent_id):
     story = Story.objects.get(pk=story_id)
-
-    # Need to return serialized content node item (use ContentNodeStorySerializer)
-    new_node = ContentNode()
+    from contentcuration.zipit import render_story
+    tmp_zip_path = render_story(story)
+    new_node = ContentNode(
+        title=story.title,
+        parent_id=parent_id,
+        description=story.description,
+        kind=content_kinds.HTML5.
+        licese_id = PUB
+        author='',
+    )
+    contents = open(tmp_zip_path, 'rb').read()
+    file_obj = create_file_from_contents(contents, ext='.'+file_formats.HTML5, node=new_node, preset_id=format_presets.HTML5_ZIP)
+    story.storage_hash = file_obj.checksum
+    story.save()
     return HttpResponse(JSONRenderer().render(ContentNodeStorySerializer(new_node).data))
 
 

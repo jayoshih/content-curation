@@ -1,0 +1,199 @@
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.template.loader import get_template
+import os
+import json
+import markdown
+import tempfile
+import zipfile
+
+from contentcuration.models import ContentNode, Story, StoryItem
+from contentcuration.html_writer import HTMLWriter
+from le_utils.constants.file_types import MAPPING, THUMBNAIL
+THUMBNAIL_FORMATS = [k for k,v in MAPPING.items() if v==THUMBNAIL]
+
+MESSAGE_TYPES = ["activity", "instructions", "message", "prompt", "reflection"]
+CONTENT_NODE_TYPE = 'content_node'
+
+
+STYLES = """
+
+body {
+    padding: 3em;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.button {
+    text-decoration: none;
+    color: initial;
+    display: inline-block;
+    padding: 10px 16px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.next-button {
+	color: white;
+    background: #996189;
+}
+
+.next-button:hover {
+	background: #72486F;
+}
+
+.optional-button {
+	color: #996189;
+	box-shadow: none;
+	margin-left: -16px;
+}
+
+.message_only .optional-button {
+	margin-left: 0;
+}
+
+.optional-button:hover {
+	background: #E0E0E0;
+}
+
+.message-kind .message_html, .message_only, .story-index-kind {
+	display: block;
+	margin: auto;
+	text-align: center;
+}
+
+"""
+
+
+
+def render_story(story):
+    sorted_story_items = StoryItem.objects.filter(story=story).order_by('order')
+    fh, temp_path = tempfile.mkstemp(suffix=".zip")
+    with HTMLWriter(write_to_path=temp_path) as zipwriter:
+        render_story_index(zipwriter, story, sorted_story_items[0])
+        zipwriter.write_contents('styles.css', STYLES)
+        for story_item in sorted_story_items:
+            render_story_item(zipwriter, story, story_item)
+    return temp_path
+
+
+def render_story_index(zipwriter, story, first_story_item):
+    template = get_template('stories/story_index.html')
+    context =  {
+        'story': story,
+        'buttons': [{'href': str(first_story_item.id)+'.html', 'text': 'START', 'class': 'next-button'}],
+    }
+    item_html = template.render(context)
+    zipwriter.write_index_contents(item_html.format(story.title))
+
+
+def render_story_item(zipwriter, story, story_item):
+    if story_item.item_type in MESSAGE_TYPES:
+        render_message(zipwriter, story, story_item)
+
+    elif story_item.item_type == CONTENT_NODE_TYPE:
+        render_content_node(zipwriter, story, story_item)
+
+    else:
+        raise ValueError('UNRECOGNIZED story_item.item_type = ' + story_item.item_type)
+
+
+def buttons_form_actions(actions):
+    buttons = []
+    for k, v in actions.items():
+        if v == 'NEXT':
+            button = {'href': str(k)+'.html',
+                      'text': 'NEXT',
+                      'class': 'next-button'}
+        else:
+            button = {'href': str(k)+'.html',
+                      'text': v,
+                      'class': 'optional-button'}
+        buttons.append(button)
+    return buttons
+
+
+def render_message(zipwriter, story, story_item):
+    html = markdown.markdown(story_item.text)
+    print 'in render_message', story_item.id, html, story_item.actions
+
+    actions = json.loads(story_item.actions)
+    buttons = buttons_form_actions(actions)
+
+    template = get_template('stories/message_item.html')
+    context =  {
+        'head_title': 'Message story item',
+        'meta_description': '',
+        'message_type': story_item.message_type,
+        'message_html': html,
+        'buttons': buttons,
+    }
+    item_html = template.render(context)
+    filename = str(story_item.id)+'.html'
+    zipwriter.write_contents(filename, item_html)
+
+
+def render_content_node(zipwriter, story, story_item):
+    html = markdown.markdown(story_item.text)
+    cnode = ContentNode.objects.get(node_id=story_item.node_id)
+    print 'in render_content_node', story_item.id, cnode.title, story_item.actions
+
+    actions = json.loads(story_item.actions)
+    buttons = buttons_form_actions(actions)
+
+
+    # figure out path
+    ############################################################################
+    abs_path = None
+    thumb_path = None
+
+    for file_obj in cnode.files.all():
+
+        if file_obj.file_format_id in THUMBNAIL_FORMATS:
+            thumb_path = file_obj.file_on_disk
+        elif file_obj.file_format_id in ["vtt", "srt"]:
+            pass  # skip subs
+        elif file_obj.file_format_id in ['perseus', 'svg', 'json', 'json']:
+            pass  # skip anything else
+        else:
+            abs_path = file_obj.file_on_disk.name
+            checksum = file_obj.checksum
+            print 'abs_path=', abs_path
+            rel_path = os.path.basename(abs_path)
+
+    # figure out what kind of file it is
+    ############################################################################
+    kind = cnode.kind.kind
+    if kind == 'video':
+        template = get_template('stories/video_node.html')
+        zipwriter.write_file(abs_path, rel_path)
+    elif kind == 'audio':
+        template = get_template('stories/audio_node.html')
+        zipwriter.write_file(abs_path, rel_path)
+    elif kind == 'document':
+        template = get_template('stories/document_node.html')
+        zipwriter.write_file(abs_path, rel_path)
+    elif kind == 'html5':
+        template = get_template('stories/html5_node.html')
+        html5_zipfile = zipfile.ZipFile(abs_path)
+        all_files = html5_zipfile.namelist()
+        for filename in all_files:
+            zipwriter.write_contents(filename, html5_zipfile.read(filename), directory=checksum)
+    else:
+        raise ValueError('UNRECOGNIZED kind = ' + kind)
+
+    context =  {
+        'kind': kind,
+        'message_html': html,
+        'head_title': cnode.title,
+        'meta_description': cnode.description,
+        'node': cnode,
+        'rel_path': rel_path,
+        'checksum': checksum,
+        'thumb_path': thumb_path,
+        'buttons': buttons,
+    }
+    item_html = template.render(context)
+    filename = str(story_item.id)+'.html'
+    zipwriter.write_contents(filename, item_html)

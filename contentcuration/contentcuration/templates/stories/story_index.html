@@ -1,0 +1,26 @@
+{% extends "stories/base.html" %}
+
+{% block maincontent %}
+
+<div class="container">
+
+    <div id="maindiv">
+
+      <div class="maincontent story-index-kind">
+
+          <h3 class="story-title">{{ story.title }}</h3>
+
+          <div class="story-description">
+              {{ story.description }}
+          </div>
+
+          <div class="story-annotation">
+              {{ story.annotation }}
+          </div>
+
+      </div>
+
+    </div>
+
+</div><!-- /.container -->
+{% endblock %}
