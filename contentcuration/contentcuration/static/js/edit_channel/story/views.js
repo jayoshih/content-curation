@@ -99,13 +99,15 @@ var StoryModalView = BaseViews.BaseModalView.extend({
         this.modal = true;
         this.selecting = options.selecting;
         this.onselect = options.onselect;
+        this.parent_node = options.parent_node;
         this.render(this.close, {channel:window.current_channel.toJSON(), selecting: this.selecting});
         new StoryDisplayListView({
             el: this.$(".modal-body"),
             modal : this,
             model:options.channel,
             selecting: this.selecting,
-            onselect: this.selected
+            onselect: this.selected,
+            parent_node: this.parent_node
         });
     },
     selected: function(collection) {
@@ -125,6 +127,7 @@ var StoryDisplayListView = BaseViews.BaseEditableListView.extend({
         var self = this;
         this.selecting = options.selecting;
         this.onselect = options.onselect;
+        this.parent_node = options.parent_node;
         this.collection = new Models.StoryCollection();
         this.collection.fetch_for_channel(this.model.id).then(function() {
             self.render();
@@ -144,7 +147,8 @@ var StoryDisplayListView = BaseViews.BaseEditableListView.extend({
             model: data,
             containing_list_view: this,
             selecting: this.selecting,
-            onselect: this.onselect
+            onselect: this.onselect,
+            parent_node: this.parent_node
         });
         this.views.push(newView);
         return newView;
@@ -174,6 +178,7 @@ var StoryListItem = BaseViews.BaseListEditableItemView.extend({
         this.bind_edit_functions();
         this.selecting = options.selecting;
         this.onselect = options.onselect;
+        this.parent_node = options.parent_node;
         _.bindAll(this, 'delete_story', 'zip_content');
         this.listenTo(this.model, "sync", this.render);
         this.render();
@@ -204,7 +209,7 @@ var StoryListItem = BaseViews.BaseListEditableItemView.extend({
     zip_content: function() {
         var self = this;
         this.display_load("Zipping story...", function(load_resolve, load_reject){
-            self.model.zip_story().then(function(collection) {
+            self.model.zip_story(self.parent_node.id).then(function(collection) {
                 self.onselect(collection);
                 load_resolve(true);
             }).catch(load_reject);

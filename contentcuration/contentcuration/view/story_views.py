@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFou
 from rest_framework.renderers import JSONRenderer
 
 from django.shortcuts import render, get_object_or_404, redirect
-from contentcuration.models import Channel, Story, StoryItem, MESSAGE_TYPES, ITEM_TYPES, FileFormat, License, FormatPreset, ContentKind, Language
+from contentcuration.models import Channel, Story, StoryItem, MESSAGE_TYPES, ITEM_TYPES, FileFormat, License, FormatPreset, ContentKind, Language, ContentNode
 from contentcuration.serializers import StorySerializer, StoryItemSerializer, ContentNodeStorySerializer, ChannelSerializer, CurrentUserSerializer, FileFormatSerializer, LicenseSerializer, FormatPresetSerializer, ContentKindSerializer, LanguageSerializer
 from contentcuration.utils.messages import get_messages
 from le_utils.constants import format_presets, content_kinds, file_formats, licenses
@@ -34,7 +34,7 @@ def get_story_items(request, story_id):
 
 @authentication_classes((TokenAuthentication, SessionAuthentication))
 @permission_classes((IsAuthenticated,))
-def zip_story(request, story_id):
+def zip_story(request, story_id, parent_id):
     story = Story.objects.get(pk=story_id)
 
     # Need to return serialized content node item (use ContentNodeStorySerializer)

@@ -1195,12 +1195,12 @@ var StoryModel = BaseModel.extend({
             });
         });
     },
-    zip_story: function() {
+    zip_story: function(parent_id) {
         var self = this;
         return new Promise(function(resolve, reject){
             $.ajax({
                 method:"GET",
-                url: window.Urls.zip_story(self.id),
+                url: window.Urls.zip_story(self.id, parent_id),
                 error:reject,
                 success: function(content_node) {
                     var new_story = new ContentNodeModel(JSON.parse(content_node));

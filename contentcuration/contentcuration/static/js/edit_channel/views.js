@@ -900,7 +900,8 @@ var BaseWorkspaceListView = BaseEditableListView.extend({
 		var editor = new StoryView.StoryModalView({
 			channel : window.current_channel,
 			selecting: true,
-			onselect: this.add_nodes
+			onselect: this.add_nodes,
+			parent_node: this.model
 		});
 	}
 });
