@@ -31,8 +31,8 @@ var PROMPT_MAPPING = {
     "resource":"Add instructions or description of this resource.",
     "message": "Add a message for students letting them know anything else about this resource, narration to transition between resources if they’re viewing this story independently, your additional thoughts on what they just engaged with, or anything else. ",
     "instructions": "Add directions for an activity, instructions to take notes, logistical tasks to be done in managing materials offline, or anything else on what to do after students are finished engaging with this resource",
-    "reflection": "Add questions, prompts, suggestions, or areas for discussion to encourage students to reflect on what they just engaged with, whether together or individually."
-
+    "reflection": "Add questions, prompts, suggestions, or areas for discussion to encourage students to reflect on what they just engaged with, whether together or individually.",
+    "activity": "Add text to guide students through an activity, exercise, project, or follow-up of any kind pertaining to what they just engaged with. Directions for take-home work or group discussions may go here as well."
 }
 
 
@@ -250,7 +250,8 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         var self = this;
         this.model.fetch_items().then(function(items) {
             self.collection = items;
-            self.load_content(self.collection.where({'is_supplementary': false}));
+            var filtered_collection = new Models.StoryItemCollection(self.collection.where({'is_supplementary': false}))
+            self.load_content(filtered_collection);
             _.forEach(self.views, function(v) { v.render_actions(); })
         });
     },
@@ -279,7 +280,6 @@ var StoryView = ExerciseViews.ExerciseView.extend({
                 item_type: item_type,
                 message_type: message_type,
                 text: "",
-                // story: window.story.id,
                 is_supplementary: is_supplementary,
                 node_id: node && node.get("node_id"),
                 order: this.get_next_order()
@@ -321,7 +321,7 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         var self = this;
         collection.fetch_nodes_by_ids_complete([model.id], true).then(function(collection) {
             var model = collection.at(0);
-            self.add_item("content_node", "resource", model, true);
+            self.add_item("content_node", "resource", model);
         });
 
         this.content_modal.close();

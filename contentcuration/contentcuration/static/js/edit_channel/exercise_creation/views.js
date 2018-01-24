@@ -409,7 +409,6 @@ var EditorView = BaseViews.BaseView.extend({
         this.setting_model = true;
         this.markdown = this.convert_html_to_markdown(contents);
         this.model.set(this.edit_key, this.markdown);
-        console.log(this.model)
         this.editor.commit();
     },
     validate: function(){

@@ -14,7 +14,7 @@
 {{#if node}}
 <div class="content_item container-fluid edit_story_item">
 	<div class="col-xs-3">
-		{{#if thumbnail}}<img src="{{thumbnail.storage_url}}" class="story_thumbnail">{{/if}}
+		<img src="{{#if thumbnail}}{{thumbnail.storage_url}}{{else}}/static/img/kolibri_placeholder.png{{/if}}" class="story_thumbnail">
 	</div>
 	<div class="col-xs-9">
 		<h4><span class="{{#get_icon node.kind}}{{/get_icon}}" aria-hidden="true"></span> {{node.title}}</h4>
