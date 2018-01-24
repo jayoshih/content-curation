@@ -29,7 +29,8 @@ var ChannelEditRouter  = Backbone.Router.extend({
 		":channel/edit(/:topic)(/:node)": "edit_page",
 		":channel/staging(/:topic)(/:node)": "staging_page",
 		":channel/view(/:topic)(/:node)": "preview_page",
-		":channel/clipboard(/:topic)(/:node)": "clipboard_page"
+		":channel/clipboard(/:topic)(/:node)": "clipboard_page",
+		":channel/stories/:story_id": "story_page"
   },
 
 	navigate_channel_home: function() {
@@ -108,6 +109,18 @@ var ChannelEditRouter  = Backbone.Router.extend({
 			document.title = replacement;
 		}
 		this.navigate(urlString, {replace: !replacement});
+	},
+	story_page: function(story_id){
+		window.fileformats = this.fileformats ;
+		window.channels = this.channelCollection;
+		window.formatpresets = this.formatpresets;
+		window.languages = this.languages;
+		window.contentkinds = this.contentkinds;
+		var StoryViews = require("edit_channel/story/views");
+		var story_view = new StoryViews.StoryView({
+			el: $("#story-container"),
+			model: new Models.StoryModel(window.story)
+		});
 	}
 });
 

@@ -1,0 +1,57 @@
+<div class="container-fluid" id="story_editor">
+	<div id="channel_title">Creating story in <b>{{channel.name}}</b>...</div>
+	<input type="text" id="story_title" class="input-form story_field" placeholder="Enter story title..." value="{{story.title}}">
+	<textarea id="story_description" class="input-form story_field" placeholder="Enter story description or objective...">{{story.description}}</textarea>
+	<hr/>
+	<ul class="panel-group list-unstyled" id="story_list" role="tablist" aria-multiselectable="true">
+		<div class="default-item container-fluid text-center">Loading...</div>
+	</ul>
+
+	<div class="row" id="add_item_options">
+		<div class="col-xs-12"><b>Add:</b></div>
+		<div class="col-xs-1"></div>
+		<div class="col-xs-2 text-center addoption">
+			<span class="glyphicon glyphicon-comment"></span>
+			<br/>
+			<div class="dropdown">
+			  <div class="dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			    Linkage
+			    <span class="caret"></span>
+			  </div>
+			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+			    <li id="addmessage"><a href="#">Message</a></li>
+			    <li id="addinstructions"><a href="#">Instructions</a></li>
+			    <li id="addreflection"><a href="#">Reflection</a></li>
+			    <li id="addactivity"><a href="#">Activity</a></li>
+			  </ul>
+			</div>
+
+		</div>
+		<div class="col-xs-2 text-center addoption" id="addcontentitem">
+			<span class="glyphicon glyphicon-th-large"></span>
+			<br/>
+			Channel
+		</div>
+		<div class="col-xs-2 text-center addoption" id="addclipboarditem">
+			<span class="glyphicon glyphicon-paste"></span>
+			<br/>
+			Clipboard
+		</div>
+		<div class="col-xs-2 text-center addoption" id="addreview">
+			<span class="glyphicon glyphicon-blackboard"></span>
+			<br/>
+			Review
+		</div>
+		<div class="col-xs-2 text-center addoption" id="addsupplementary">
+			<span class="glyphicon glyphicon-file"></span>
+			<br/>
+			Supplementary
+		</div>
+		<div class="col-xs-1"></div>
+	</div>
+
+	<div id="story_bottom" class="container-fluid">
+		<button class="action-button pull-right" id="save_story">SAVE STORY</button>
+		<a class="action-text pull-right" id="zipper">ZIP IT!</a>
+	</div>
+</div>

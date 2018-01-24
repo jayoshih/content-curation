@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% block content %}
+	<script type="text/javascript" src="{% static 'js/bundles/channel_edit.js' %}"></script>
+
+	<script>
+		var item_types = JSON.parse("{{ item_types|escapejs }}");
+		var message_types = JSON.parse("{{ message_types |escapejs }}");
+		var story = JSON.parse("{{ story|escapejs}}");
+		var user = JSON.parse("{{ current_user|escapejs}}");
+		var channel = JSON.parse("{{ channel|escapejs}}");
+		var license_list = JSON.parse("{{ license_list|escapejs}}");
+		var fformats = JSON.parse("{{ fileformat_list|escapejs }}");
+		var presets = JSON.parse("{{ fpreset_list|escapejs }}");
+		var langs = JSON.parse("{{ langs_list|escapejs }}");
+		var kinds = JSON.parse("{{ ckinds_list |escapejs }}");
+	</script>
+	<script type="text/javascript">
+		var bundle = require("channel_edit");
+		bundle.$(function() {
+            window.channel_router = new bundle.ChannelEditRouter();
+            bundle.Backbone.history.start({pushState: true, root: "{% url 'channels' %}"});
+        });
+
+    </script>
+	<div id="story-container"></div>
+{% endblock content %}

@@ -248,6 +248,7 @@ var BasePrerequisiteView = BaseViews.BaseView.extend({
         _.bindAll(this, 'render');
         this.modal = options.modal;
         this.model = options.model;
+        this.id_name = options.id_name || "parent";
         this.allow_edit = options.allow_edit;
         this.collection = new Models.ContentNodeCollection();
         this.container = options.container;
@@ -292,7 +293,7 @@ var RelatedView = BasePrerequisiteView.extend({
         this.$el.html(this.template(null, {
             data: this.get_intl_data()
         }));
-        this.collection.get_all_fetch_simplified([this.model.get('parent')]).then(function(collection){
+        this.collection.get_all_fetch_simplified([this.model.get(this.id_name)]).then(function(collection){
             self.navigate_to_node(collection.at(0) || window.current_channel.get_root("main_tree"));
         });
     },
@@ -493,5 +494,8 @@ var RelatedItem = BasePrerequisiteItem.extend({
 
 module.exports = {
     PrerequisiteModalView: PrerequisiteModalView,
-    PrerequisiteView:PrerequisiteView
+    PrerequisiteView:PrerequisiteView,
+    RelatedView: RelatedView,
+    RelatedList: RelatedList,
+    RelatedItem: RelatedItem
 }

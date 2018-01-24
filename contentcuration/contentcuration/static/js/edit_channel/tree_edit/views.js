@@ -85,7 +85,8 @@ var TreeEditView = BaseViews.BaseWorkspaceView.extend({
 		'click .sync_button' : 'sync_content',
 		'click .move_button' : 'move_items',
 		'click .approve_channel' : 'activate_channel',
-		'click .stats_button': 'open_stats'
+		'click .stats_button': 'open_stats',
+		'click .story_button': 'open_story_editor'
 	},
 	edit_content:function(){ this.edit_selected(this.is_edit_page)},
 	render: function() {

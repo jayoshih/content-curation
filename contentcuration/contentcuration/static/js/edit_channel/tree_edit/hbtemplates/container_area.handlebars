@@ -70,6 +70,12 @@
 				<a class="nav-label stats_button disable-on-edit">{{formatMessage (intlGet 'messages.summary')}}</a>
 			</div>
 		{{/if}}
+		{{#if edit}}
+			<div class="nav-button-container">
+				<div class="nav-button story_button disable-on-edit" title="Story Editor"><span class="glyphicon glyphicon-book"></span></div>
+				<a class="nav-label story_button disable-on-edit" title="Story Editor">Story</a>
+			</div>
+		{{/if}}
 		<div class="hide-details-container">
 			<input type="checkbox" id="hide_details_checkbox"/>
 			<label for="hide_details_checkbox">{{formatMessage (intlGet 'messages.hide_details')}}</label>

@@ -380,6 +380,12 @@ var BaseWorkspaceView = BaseView.extend({
 			}
 		});
 	},
+	open_story_editor: function() {
+		var StoryView = require("edit_channel/story/views");
+		var editor = new StoryView.StoryModalView({
+			channel : window.current_channel
+		});
+	},
 	move_content:function(move_collection){
 		var MoveView = require("edit_channel/move/views");
 		var list = this.get_selected(true);

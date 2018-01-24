@@ -1180,15 +1180,42 @@ var StoryModel = BaseModel.extend({
     root_list:"story-list",
     model_name:"StoryModel",
     defaults: {
-        title: "Story",
-
+        title: "New Story"
+    },
+    fetch_items: function() {
+        var self = this;
+        return new Promise(function(resolve, reject){
+            $.ajax({
+                method:"GET",
+                url: window.Urls.get_story_items(self.id),
+                error:reject,
+                success: function(story_items) {
+                    resolve(new StoryItemCollection(JSON.parse(story_items)));
+                }
+            });
+        });
     }
 });
 
 var StoryCollection = BaseCollection.extend({
     model: StoryModel,
     list_name:"story-list",
-    model_name:"StoryCollection"
+    model_name:"StoryCollection",
+
+    fetch_for_channel: function(channel_id){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            $.ajax({
+                method:"GET",
+                url: window.Urls.get_stories(channel_id),
+                error:reject,
+                success: function(stories) {
+                    self.reset(JSON.parse(stories));
+                    resolve(self);
+                }
+            });
+        });
+    }
 });
 
 var StoryItemModel = BaseModel.extend({
@@ -1330,4 +1357,8 @@ module.exports = {
     ExerciseCollection:ExerciseCollection,
     AssessmentItemModel:AssessmentItemModel,
     AssessmentItemCollection:AssessmentItemCollection,
+    StoryModel:StoryModel,
+    StoryCollection: StoryCollection,
+    StoryItemModel: StoryItemModel,
+    StoryItemCollection: StoryItemCollection
 }

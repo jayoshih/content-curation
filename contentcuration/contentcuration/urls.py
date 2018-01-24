@@ -24,7 +24,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 from rest_framework import routers, viewsets
 from contentcuration.forms import ForgotPasswordForm
-from contentcuration.models import ContentNode, License, Channel, File, FileFormat, FormatPreset, ContentTag, AssessmentItem, ContentKind, Language, User, Invitation
+from contentcuration.models import ContentNode, License, Channel, File, FileFormat, FormatPreset, ContentTag, AssessmentItem, ContentKind, Language, User, Invitation, Story, StoryItem
 import contentcuration.serializers as serializers
 import contentcuration.views as views
 import contentcuration.view.registration_views as registration_views
@@ -35,6 +35,7 @@ import contentcuration.view.file_views as file_views
 import contentcuration.view.node_views as node_views
 import contentcuration.view.admin_views as admin_views
 import contentcuration.view.public_views as public_views
+import contentcuration.view.story_views as story_views
 import django_js_reverse.views as django_js_reverse_views
 import django.views as django_views
 
@@ -87,6 +88,13 @@ class FormatPresetViewSet(viewsets.ModelViewSet):
     queryset = FormatPreset.objects.all()
     serializer_class = serializers.FormatPresetSerializer
 
+class StoryViewSet(viewsets.ModelViewSet):
+    queryset = Story.objects.all()
+    serializer_class = serializers.StorySerializer
+
+class StoryItemViewSet(viewsets.ModelViewSet):
+    queryset = StoryItem.objects.all()
+    serializer_class = serializers.StoryItemSerializer
 
 class ContentKindViewSet(viewsets.ModelViewSet):
     queryset = ContentKind.objects.all()
@@ -159,6 +167,8 @@ router.register(r'tag', TagViewSet)
 router.register(r'contentkind', ContentKindViewSet)
 router.register(r'user', UserViewSet)
 router.register(r'invitation', InvitationViewSet)
+router.register(r'story', StoryViewSet)
+router.register(r'storyitem', StoryItemViewSet)
 
 bulkrouter = BulkRouter(trailing_slash=False)
 bulkrouter.register(r'assessmentitem', AssessmentItemViewSet)
@@ -296,6 +306,13 @@ urlpatterns += [
     url(r'^api/get_all_channels/$', admin_views.get_all_channels, name='get_all_channels'),
     url(r'^api/get_all_users/$', admin_views.get_all_users, name='get_all_users'),
     url(r'^api/get_channel_kind_count/(?P<channel_id>[^/]+)$', admin_views.get_channel_kind_count, name='get_channel_kind_count'),
+]
+
+# Add story endpoints
+urlpatterns += [
+    url(r'^api/get_stories/(?P<channel_id>[^/]+)$', story_views.get_stories, name='get_stories'),
+    url(r'^api/get_story_items/(?P<story_id>[^/]+)$', story_views.get_story_items, name='get_story_items'),
+    url(r'^channels/(?P<channel_id>[^/]{32})/stories/(?P<story_id>[0-9+])', story_views.channel_story, name='channel_story'),
 ]
 
 urlpatterns += [url(r'^jsreverse/$', django_js_reverse_views.urls_js, name='js_reverse')]

@@ -312,10 +312,13 @@ var EditorView = BaseViews.BaseView.extend({
                 self.toggle_loading(false);
             });
         }else{
-            this.$el.html(this.default_template({ source_url: this.model.get('source_url') }, {
-                data: this.get_intl_data()
-            }));
+            this.render_default();
         }
+    },
+    render_default() {
+        this.$el.html(this.default_template({ source_url: this.model.get('source_url') }, {
+            data: this.get_intl_data()
+        }));
     },
     render_editor: function() {
         var self = this;
@@ -490,6 +493,7 @@ var EditorView = BaseViews.BaseView.extend({
         });
     },
     replace_image_paths: function(content){
+        content = content || "";
         var matches = content.match(IMG_REGEX);
         if(matches){
             matches.forEach(function(match){
@@ -1422,5 +1426,11 @@ var AssessmentItemHintView = ExerciseEditableItemView.extend({
 
 module.exports = {
     ExerciseView:ExerciseView,
-    AssessmentItemDisplayView:AssessmentItemDisplayView
+    AssessmentItemDisplayView:AssessmentItemDisplayView,
+    AssessmentItemView:AssessmentItemView,
+    EditorView:EditorView,
+    Summernote:Summernote,
+    UploadImage: UploadImage,
+    UndoButton: UndoButton,
+    RedoButton:RedoButton
 }

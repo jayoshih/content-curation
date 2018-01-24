@@ -15,6 +15,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.fields import set_value, SkipField
 from rest_framework.settings import api_settings
 from rest_framework.utils import model_meta
+from rest_framework.renderers import JSONRenderer
 from rest_framework_bulk import BulkSerializerMixin
 
 from contentcuration.models import *
@@ -454,7 +455,7 @@ class SimplifiedContentNodeSerializer(BulkSerializerMixin, serializers.ModelSeri
 
     class Meta:
         model = ContentNode
-        fields = ('title', 'id', 'sort_order', 'kind', 'children', 'parent', 'metadata', 'content_id', 'prerequisite', 'is_prerequisite_of', 'parent_title', 'ancestors', 'tree_id', 'language')
+        fields = ('title', 'id', 'sort_order', 'kind', 'children', 'parent', 'metadata', 'content_id', 'prerequisite', 'is_prerequisite_of', 'parent_title', 'ancestors', 'tree_id', 'language', 'node_id')
 
 
 class RootNodeSerializer(SimplifiedContentNodeSerializer):
@@ -550,6 +551,14 @@ class ContentNodeSerializer(SimplifiedContentNodeSerializer):
                   'license_description', 'assessment_items', 'files', 'parent_title', 'ancestors', 'modified', 'original_channel',
                   'kind', 'parent', 'children', 'published', 'associated_presets', 'valid', 'metadata', 'original_source_node_id',
                   'tags', 'extra_fields', 'prerequisite', 'is_prerequisite_of', 'node_id', 'tree_id', 'freeze_authoring_data')
+
+class ContentNodeStorySerializer(ContentNodeSerializer):
+    files = FileSerializer(many=True, read_only=True)
+
+    class Meta:
+        list_serializer_class = CustomListSerializer
+        model = ContentNode
+        fields = ('title', 'id', 'description', 'author', 'node_id','files', 'kind',  'associated_presets', 'thumbnail_encoding')
 
 
 class ContentNodeEditSerializer(ContentNodeSerializer):
@@ -798,15 +807,21 @@ class InvitationSerializer(BulkSerializerMixin, serializers.ModelSerializer):
 
 
 class StoryItemSerializer(BulkSerializerMixin, serializers.ModelSerializer):
+    contentnode = serializers.SerializerMethodField('get_node')
+
+    def get_node(self, item):
+        if item.node_id and item.story:
+            node = ContentNode.objects.prefetch_related("files").filter(node_id=item.node_id, tree_id=item.story.channel.main_tree.tree_id).first()
+            return node and ContentNodeStorySerializer(node).data
 
     class Meta:
-        model = Invitation
-        fields = ('id', 'order', 'item_type', 'message_type', 'node_id', 'actions', 'is_supplementary')
+        model = StoryItem
+        fields = ('id', 'order', 'item_type', 'message_type', 'node_id', 'actions', 'is_supplementary', 'text', 'contentnode', 'story')
 
 
 class StorySerializer(BulkSerializerMixin, serializers.ModelSerializer):
     items = StoryItemSerializer(read_only=True, many=True)
 
     class Meta:
-        model = Invitation
-        fields = ('id', 'title', 'description', 'annotation', 'items')
+        model = Story
+        fields = ('id', 'title', 'description', 'annotation', 'items', 'channel')

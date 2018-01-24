@@ -1,0 +1,25 @@
+<h3 class="uppercase story_item_page"><span class="glyphicon glyphicon-bookmark"></span> &nbsp;Page {{page_count}}: {{model.message_type}}</h3>
+<div class="assessment_item container-fluid edit_story_item">
+	<div class="main_edit_area">
+		<div class="question_area toggle_story">
+			<div class="row">
+				<div class="col-sm-12">
+				  	<div class="question text editable" data-ph="Text"></div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{{#if node}}
+<div class="content_item container-fluid edit_story_item">
+	<div class="col-xs-3">
+		{{#if thumbnail}}<img src="{{thumbnail.storage_url}}" class="story_thumbnail">{{/if}}
+	</div>
+	<div class="col-xs-9">
+		<h4><span class="{{#get_icon node.kind}}{{/get_icon}}" aria-hidden="true"></span> {{node.title}}</h4>
+		<p><i>{{node.author}}</i></p>
+		<p>{{node.description}}</p>
+	</div>
+</div>
+{{/if}}
