@@ -92,7 +92,7 @@ class StoryViewSet(viewsets.ModelViewSet):
     queryset = Story.objects.all()
     serializer_class = serializers.StorySerializer
 
-class StoryItemViewSet(viewsets.ModelViewSet):
+class StoryItemViewSet(BulkModelViewSet):
     queryset = StoryItem.objects.all()
     serializer_class = serializers.StoryItemSerializer
 
@@ -168,12 +168,12 @@ router.register(r'contentkind', ContentKindViewSet)
 router.register(r'user', UserViewSet)
 router.register(r'invitation', InvitationViewSet)
 router.register(r'story', StoryViewSet)
-router.register(r'storyitem', StoryItemViewSet)
 
 bulkrouter = BulkRouter(trailing_slash=False)
 bulkrouter.register(r'assessmentitem', AssessmentItemViewSet)
 bulkrouter.register(r'contentnode', ContentNodeViewSet)
 bulkrouter.register(r'file', FileViewSet)
+bulkrouter.register(r'storyitem', StoryItemViewSet)
 
 urlpatterns = [
     url(r'^$', views.base, name='base'),

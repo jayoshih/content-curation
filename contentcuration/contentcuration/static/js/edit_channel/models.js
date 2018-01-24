@@ -1242,53 +1242,7 @@ var StoryItemModel = BaseModel.extend({
         type: "message",
         item_type: "message",
         content: "message"
-    },
-
-    // initialize: function () {
-    //     if (typeof this.get("answers") !== "object") {
-    //         this.set("answers", new ExerciseItemCollection(JSON.parse(this.get("answers"))), {silent: true});
-    //     }
-    //     if (typeof this.get("hints") !== "object"){
-    //         this.set("hints", new ExerciseItemCollection(JSON.parse(this.get("hints"))), {silent:true});
-    //     }
-    // },
-
-    // parse: function(response) {
-    //     if (response !== undefined) {
-    //         if (response.answers) {
-    //             response.answers = new ExerciseItemCollection(JSON.parse(response.answers));
-    //         }
-    //         if(response.hints){
-    //             response.hints = new ExerciseItemCollection(JSON.parse(response.hints));
-    //         }
-    //     }
-    //     return response;
-    // },
-
-    // toJSON: function() {
-    //     var attributes = _.clone(this.attributes);
-    //     if (typeof attributes.answers !== "string") {
-    //         // Add answer images to the files list
-    //         attributes.files = _.chain(attributes.answers.models)
-    //                             .map(function(item) { return item.get('files'); })
-    //                             .flatten()
-    //                             .filter(function(item){ return item; })
-    //                             .union(attributes.files)
-    //                             .value();
-    //         attributes.answers = JSON.stringify(attributes.answers.toJSON());
-    //     }
-    //     if (typeof attributes.hints !== "string") {
-    //         // Add hint images to the files list
-    //         attributes.files = _.chain(attributes.hints.models)
-    //                             .map(function(item) { return item.get('files'); })
-    //                             .flatten()
-    //                             .filter(function(item){ return item; })
-    //                             .union(attributes.files)
-    //                             .value();
-    //         attributes.hints = JSON.stringify(attributes.hints.toJSON());
-    //     }
-    //     return attributes;
-    // }
+    }
 });
 
 var StoryItemCollection = BaseCollection.extend({
@@ -1297,54 +1251,20 @@ var StoryItemCollection = BaseCollection.extend({
     comparator : function(item){
         return item.get("order");
     },
-    // get_all_fetch: function(ids, force_fetch){
-    //     force_fetch = (force_fetch)? true : false;
-    //     var self = this;
-    //     var promise = new Promise(function(resolve, reject){
-    //         var promises = [];
-    //         ids.forEach(function(id){
-    //             promises.push(new Promise(function(modelResolve, modelReject){
-    //                 var model = self.get(id);
-    //                 if(force_fetch || !model){
-    //                     model = self.add(id);
-    //                     model.fetch({
-    //                         success:function(returned){
-    //                             modelResolve(returned);
-    //                         },
-    //                         error:function(obj, error){
-    //                             modelReject(error);
-    //                         }
-    //                     });
-    //                 } else {
-    //                     modelResolve(model);
-    //                 }
-    //             }));
-    //         });
-    //         Promise.all(promises).then(function(fetchedModels){
-    //             var to_fetch = self.clone();
-    //             to_fetch.reset();
-    //             fetchedModels.forEach(function(entry){
-    //                 to_fetch.add(entry);
-    //             });
-    //             resolve(to_fetch);
-    //         });
-    //     });
-    //     return promise;
-    // },
-    // save:function(){
-    //     var self = this;
-    //     return new Promise(function(resolve, reject){
-    //         Backbone.sync("update", self, {
-    //             url: self.model.prototype.urlRoot(),
-    //             success:function(data){
-    //                 resolve(new AssessmentItemCollection(data));
-    //             },
-    //             error:function(error){
-    //                 reject(error);
-    //             }
-    //         });
-    //     });
-    // }
+    save:function(){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            Backbone.sync("update", self, {
+                url: self.model.prototype.urlRoot(),
+                success:function(data){
+                    resolve(new StoryItemCollection(data));
+                },
+                error:function(error){
+                    reject(error);
+                }
+            });
+        });
+    }
 });
 
 

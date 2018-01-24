@@ -23,6 +23,16 @@
 	</div>
 </div>
 {{/if}}
-<div class="container-fluid">
-	Add Link: <a class="action-text add_review">Review</a> | <a class="action-text add_supplementary">Supplementary</a>
+<div class="container-fluid linked-actions"></div>
+<div class="container-fluid link-options">
+	Add Link:
+	<a class="action-text go_to_page_link" tabindex="0" data-id="#pages_{{model.id}}">Within Story</a>
+	| <a class="action-text add_supplementary">Supplementary Material</a>
+	| <a class="action-text add_upload">Upload</a>
+</div>
+
+
+<div class="popover" tabindex="0" role="popover" id="pages_{{model.id}}">
+	<div class="arrow"></div>
+	<div class="popover-content page_popover"><i>Loading...</i></div>
 </div>

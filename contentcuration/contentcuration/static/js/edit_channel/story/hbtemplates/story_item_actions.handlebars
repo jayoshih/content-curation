@@ -1,0 +1,11 @@
+<div class="story_link_action row">
+<div class="col-xs-2 text-right">Link Text:</div>
+<div class="col-xs-4">
+	{{#if editing }}
+		<input type="text" value="{{action.button}}" maxlength="20" class="edit_button_text">
+		<i class="glyphicon glyphicon-ok submit_button"></i>
+	{{else}}<b>{{action.button}}</b> <i class="glyphicon glyphicon-pencil edit_button"></i>
+	{{/if}}
+</div>
+<div class="col-xs-6">Link: {{#if item.is_supplementary}}<b class="preview_supplementary">{{action.title}}</b>{{else}}{{action.title}}{{/if}}</div>
+</div>

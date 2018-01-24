@@ -1,5 +1,8 @@
 <div class="container-fluid" id="story_editor">
-	<div id="channel_title">Creating story in <b>{{channel.name}}</b>...</div>
+	<div id="channel_title">
+		<a class="pull-right exit_story" href="/channels/{{channel.id}}/edit">X</a>
+		Creating story in <b>{{channel.name}}</b>...
+	</div>
 	<input type="text" id="story_title" class="input-form story_field" placeholder="Enter story title..." value="{{story.title}}">
 	<textarea id="story_description" class="input-form story_field" placeholder="Enter story description or objective...">{{story.description}}</textarea>
 	<hr/>
@@ -15,13 +18,13 @@
 			<br/>
 			<div class="dropdown">
 			  <div class="dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-			    Linkage
+			    Bridge
 			    <span class="caret"></span>
 			  </div>
 			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
 			    <li id="addmessage"><a>Message</a></li>
 			    <li id="addinstructions"><a>Instructions</a></li>
-			    <li id="addreflection"><a>Reflection</a></li>
+			    <li id="addreflection"><a>Reflection Prompt</a></li>
 			    <li id="addactivity"><a>Activity</a></li>
 			  </ul>
 			</div>

@@ -199,7 +199,6 @@ var StoryListItem = BaseViews.BaseListEditableItemView.extend({
     zip_content: function() {
         var self = this;
         this.model.zip_story().then(function(collection) {
-            console.log(collection)
             self.onselect(collection);
         })
 
@@ -215,6 +214,13 @@ var StoryView = ExerciseViews.ExerciseView.extend({
     is_changed: false,
     additem_el: "#additem",
     last_item: null,
+    get_next_order: function(){
+        if(this.collection.length > 0){
+            var max = this.collection.max(function(i){ return i.get('order');});
+            return (max && max.get('order') >= 0)? max.get('order') + 1 : 1;
+        }
+        return 1;
+    },
 
     initialize: function(options) {
         _.bindAll(this, 'add_item', 'selected_content_item');
@@ -244,7 +250,8 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         var self = this;
         this.model.fetch_items().then(function(items) {
             self.collection = items;
-            self.load_content(self.collection);
+            self.load_content(self.collection.where({'is_supplementary': false}));
+            _.forEach(self.views, function(v) { v.render_actions(); })
         });
     },
     set_story: function() {
@@ -274,7 +281,8 @@ var StoryView = ExerciseViews.ExerciseView.extend({
                 text: "",
                 // story: window.story.id,
                 is_supplementary: is_supplementary,
-                node_id: node && node.get("node_id")
+                node_id: node && node.get("node_id"),
+                order: this.get_next_order()
             });
 
             var self = this;
@@ -313,7 +321,7 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         var self = this;
         collection.fetch_nodes_by_ids_complete([model.id], true).then(function(collection) {
             var model = collection.at(0);
-            self.add_item("content_node", "resource", model);
+            self.add_item("content_node", "resource", model, true);
         });
 
         this.content_modal.close();
@@ -332,6 +340,7 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         });
         this.views.push(new_story_item);
         if (!model.get("is_supplementary")) {
+            this.last_item && this.last_item.render_actions();
             this.last_item = new_story_item;
         }
         return new_story_item;
@@ -342,6 +351,7 @@ var StoryView = ExerciseViews.ExerciseView.extend({
     save_content: function() {
         this.collection.forEach(function(model) {
             model.set('story', window.story.id);
+            model.set('id', model.id); // Ids not getting passed to serializer
         });
         this.collection.save();
         this.model.save().then(function() {
@@ -352,13 +362,14 @@ var StoryView = ExerciseViews.ExerciseView.extend({
 
 var StoryItemView = ExerciseViews.AssessmentItemView.extend({
     template: require("./hbtemplates/story_item_edit.handlebars"),
+    pages_template: require("./hbtemplates/story_pages.handlebars"),
     closed_toolbar_template: require("./hbtemplates/toolbar_closed.handlebars"),
     open_toolbar_template: require("./hbtemplates/toolbar_open.handlebars"),
     editor_el: ".question",
     initialize: function(options) {
         _.bindAll(this, "set_toolbar_open", "toggle", "set_toolbar_closed", "commit_type_change",
-                "set_undo_redo_listener", "unset_undo_redo_listener", "toggle_focus", "set_true_false",
-                "toggle_undo_redo", "update_hints", "set_type", "set_open");
+                "set_undo_redo_listener", "unset_undo_redo_listener", "toggle_focus", "set_true_false", "add_supplementary",
+                "toggle_undo_redo", "update_hints", "set_type", "set_open", "add_action", "select_supplementary");
         this.originalData = this.model.toJSON();
         this.onchange = options.onchange;
         this.page_count = options.page_count;
@@ -377,7 +388,9 @@ var StoryItemView = ExerciseViews.AssessmentItemView.extend({
         "click .toggle" : "toggle",
         "click .content_item": "load_preview",
         "click .add_review": "add_review",
-        "click .add_supplementary": "add_supplementary"
+        "click .add_supplementary": "add_supplementary",
+        "click .go_to_page_link": "load_page_list",
+        "click .page_select": "add_page"
     },
     render: function() {
 
@@ -390,8 +403,40 @@ var StoryItemView = ExerciseViews.AssessmentItemView.extend({
         }, {
             data: this.get_intl_data()
         }));
-
+        this.create_popover();
         this.render_editor();
+    },
+    create_popover:function(){
+        var self = this;
+        this.$el.find(".go_to_page_link").popover({
+            html: true,
+            placement: "top",
+            trigger: "focus",
+            toggle: "popover",
+            content: function () {
+                return $(this.dataset.id).html();
+            }
+        });
+    },
+    load_page_list: function(){
+        var pages = [];
+        var self = this;
+        _.forEach(this.containing_list_view.views, function(v) {
+            if(v.model.id !== self.model.id) {
+                pages.push({
+                    "id": v.model.id,
+                    "page": v.page_count,
+                    "title": v.model.get("message_type")
+                });
+            }
+        });
+        this.$(".page_popover").html(this.pages_template({pages: pages}));
+        this.$(".page_select").on("click", function(event) {
+            var el = $(event.target);
+            var name = (el.data('page') > self.page_count)? "Jump to " : "Review ";
+            self.add_action(name + el.data('page-title'), el.data('id'));
+            self.render_actions();
+        });
     },
     render_editor: function(){
         if (!this.editor_view) {
@@ -413,15 +458,70 @@ var StoryItemView = ExerciseViews.AssessmentItemView.extend({
     },
     add_action: function(button_text, story_item_id) {
         var actions = JSON.parse(this.model.get('actions') || "{}");
-        actions[story_item_id] = button_text;
+        actions[story_item_id.toString()] = button_text;
         this.model.set("actions", JSON.stringify(actions));
-        this.render_actions();
     },
-    add_review: function() {
-        // Open modal, set action when done (reload actions)
+    render_actions: function() {
+        var actions = JSON.parse(this.model.get('actions') || "{}");
+        var self = this;
+        self.$el.find(".linked-actions").html("");
+        _.forEach(_.keys(actions), function(k) {
+            var view = _.find(self.containing_list_view.views, function(v) {
+                return v.model.id.toString() == k.toString();
+            });
+            var item = null;
+            var title = "";
+            if (view) {
+                item = view.model;
+                title = "Page " + view.page_count + " (" + item.get("message_type") + ")";
+            } else {
+                item = self.containing_list_view.collection.find(function(m) {
+                    return m.id.toString() == k.toString();
+                });
+                title = (item.get("contentnode").attributes)? item.get("contentnode").get("title") : item.get("contentnode").title;
+            }
+
+            var new_action = new StoryActionView({
+                action: {"title":title, "button": actions[k]},
+                item: item,
+                onedit: self.add_action
+            });
+            self.$el.find(".linked-actions").append(new_action.el);
+        });
     },
     add_supplementary: function() {
         // Open file selector, don't render supplementary on tree
+        var rootnode = window.current_channel.get_root("main_tree");
+        this.content_modal = new StoryContentModalView({
+            onselect: this.select_supplementary,
+            model: rootnode,
+        });
+    },
+    select_supplementary: function(contentnode) {
+        var collection = new Models.ContentNodeCollection();
+        var self = this;
+        collection.fetch_nodes_by_ids_complete([contentnode.id], true).then(function(collection) {
+            var model = collection.at(0);
+            var actions =  {[self.model.id.toString()]: "BACK"};
+
+            var newItem = new Models.StoryItemModel({
+                item_type: "content_node",
+                message_type: "resource",
+                text: "",
+                is_supplementary: true,
+                node_id: model.get("node_id"),
+                order: 0,
+                actions:JSON.stringify(actions)
+            });
+            newItem.save().then(function(saved_story) {
+                newItem.set("id", saved_story.id);
+                newItem.set("contentnode", model);
+                self.containing_list_view.collection.add(newItem);
+                self.add_action("View Extra", saved_story.id);
+                self.render_actions();
+            });
+        });
+        this.content_modal.close();
     },
     load_preview: function(event){
         var file = _.find(this.node.files, function(i) { return !i.preset.supplementary; });
@@ -432,6 +532,56 @@ var StoryItemView = ExerciseViews.AssessmentItemView.extend({
             subtitles: subtitles
         });
     },
+});
+
+var StoryActionView = BaseViews.BaseView.extend({
+    template: require("./hbtemplates/story_item_actions.handlebars"),
+    name: NAMESPACE,
+    $trs: MESSAGES,
+
+    initialize: function(options) {
+        this.action = options.action;
+        this.item = options.item;
+        this.editing = false;
+        this.onedit = options.onedit;
+        this.render();
+    },
+    events: {
+        "click .edit_button": "edit",
+        "click .submit_button": "submit",
+        "click .preview_supplementary": "preview_supplementary"
+    },
+    render: function() {
+        this.$el.html(this.template({
+            action: this.action,
+            editing: this.editing,
+            item: this.item.toJSON()
+        }, {
+            data: this.get_intl_data()
+        }));
+    },
+    edit: function() {
+        this.editing = true;
+        this.render();
+    },
+    submit: function() {
+        var new_text = this.$(".edit_button_text").val();
+        this.onedit(new_text, this.item.id);
+        this.action.button = new_text;
+        this.editing = false;
+        this.render();
+    },
+    preview_supplementary: function() {
+        var node = this.item.get("contentnode");
+        node = (node.attributes)? node : new Models.ContentNodeModel(node);
+        var file = _.find(node.get("files"), function(i) { return !i.preset.supplementary; });
+        var subtitles = _.filter(node.get("files"), function(i) { return i.preset.subtitle; });
+        new StoryPreviewFileView({
+            node: node,
+            model: file,
+            subtitles: subtitles
+        });
+    }
 });
 
 var StoryContentModalView = BaseViews.BaseModalView.extend({

@@ -39,6 +39,14 @@
 
 #story_editor {
     padding: 50px 100px;
+    .exit_story {
+        color: gray;
+        font-size: 14pt;
+        &:hover {
+            text-decoration: none;
+            font-weight: bold;
+        }
+    }
     #channel_title {
         color: @gray-800;
         font-size: 12pt;
@@ -85,6 +93,27 @@
                 margin: 10px;
             }
         }
+        .story_link_action {
+            background-color: powderblue;
+            padding: 10px;
+            font-size: 11pt;
+            margin: 0px 15px;
+            width: 88%;
+            .edit_button { margin-left: 15px; }
+            .edit_button_text {
+                width: 85%;
+                border: none;
+            }
+            .glyphicon { cursor: pointer;}
+        }
+        .link-options {
+            margin-top: 20px;
+            font-size: 11pt;
+            padding: 5px 25px;
+        }
+    }
+    .page_select {
+
     }
     #add_item_options {
         border: 2px dotted @gray-400;

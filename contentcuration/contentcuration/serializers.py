@@ -64,6 +64,33 @@ class FormatPresetSerializer(serializers.ModelSerializer):
             'allowed_formats', 'associated_mimetypes', 'display')
 
 
+class StoryItemListSerializer(serializers.ListSerializer):
+    def update(self, instance, validated_data):
+        ret = []
+        update_stories = {}
+
+        with transaction.atomic():
+            for item in validated_data:
+
+                # User should not be able to change files without a display
+                if 'id' in item:
+                    update_stories[item['id']] = item
+                else:
+                    # create new nodes
+                    ret.append(StoryItem.objects.create(**item))
+
+        if update_stories:
+            with transaction.atomic():
+                for file_id, data in update_stories.items():
+                    file_obj, _new = StoryItem.objects.get_or_create(pk=file_id)
+
+                    # potential optimization opportunity
+                    for attr, value in data.items():
+                        setattr(file_obj, attr, value)
+                    file_obj.save()
+                    ret.append(file_obj)
+        return ret
+
 class FileListSerializer(serializers.ListSerializer):
     def update(self, instance, validated_data):
         ret = []
@@ -807,6 +834,7 @@ class InvitationSerializer(BulkSerializerMixin, serializers.ModelSerializer):
 
 
 class StoryItemSerializer(BulkSerializerMixin, serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
     contentnode = serializers.SerializerMethodField('get_node')
 
     def get_node(self, item):
@@ -815,6 +843,7 @@ class StoryItemSerializer(BulkSerializerMixin, serializers.ModelSerializer):
             return node and ContentNodeStorySerializer(node).data
 
     class Meta:
+        list_serializer_class = StoryItemListSerializer
         model = StoryItem
         fields = ('id', 'order', 'item_type', 'message_type', 'node_id', 'actions', 'is_supplementary', 'text', 'contentnode', 'story')
 
