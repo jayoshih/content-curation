@@ -209,6 +209,7 @@ var StoryListItem = BaseViews.BaseListEditableItemView.extend({
 
 var StoryView = ExerciseViews.ExerciseView.extend({
     template: require("./hbtemplates/story_edit.handlebars"),
+    review_template: require("./hbtemplates/story_review_item.handlebars"),
     list_selector:"#story_list",
     default_item:"#story_list >.default-item",
     is_changed: false,
@@ -222,7 +223,10 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         this.render();
     },
     events: {
-        "click #additem": "add_item",
+        "click #addmessage": "add_message",
+        "click #addinstructions": "add_instructions",
+        "click #addreflection": "add_reflection",
+        "click #addactivity": "add_activity",
         "click #save_story": "save_content",
         "click #zipper": "zip_content",
         "change .story_field": "set_story",
@@ -247,7 +251,19 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         this.model.set("title", this.$("#story_title").val().trim());
         this.model.set("description", this.$("#story_description").val().trim());
     },
-    add_item: function(item_type, message_type, text, node, is_supplementary) {
+    add_message: function() {
+        this.add_item("message", "message");
+    },
+    add_instructions: function() {
+        this.add_item("message", "instructions");
+    },
+    add_reflection: function() {
+        this.add_item("message", "reflection");
+    },
+    add_activity: function() {
+        this.add_item("message", "activity");
+    },
+    add_item: function(item_type, message_type, node, is_supplementary) {
         if(!this.$(this.additem_el).hasClass('disabled')){
             this.$(this.default_item).css('display', 'none');
             this.close_all_editors();
@@ -255,7 +271,7 @@ var StoryView = ExerciseViews.ExerciseView.extend({
             var newItem = new Models.StoryItemModel({
                 item_type: item_type,
                 message_type: message_type,
-                text: text,
+                text: "",
                 // story: window.story.id,
                 is_supplementary: is_supplementary,
                 node_id: node && node.get("node_id")
@@ -268,17 +284,13 @@ var StoryView = ExerciseViews.ExerciseView.extend({
                 }
 
                 self.collection.add(newItem);
+                if (self.last_item) {
+                    self.last_item.add_action("NEXT", story_item.id);
+                }
                 var newView = self.create_new_view(newItem);
                 $("#story_list").append(newView.el);
                 self.propagate_changes();
                 newView.set_open();
-
-                if (self.last_item) {
-                    self.last_item.add_action("NEXT", story_item.id);
-                    if (!is_supplementary) {
-                        self.last_item = newView;
-                    }
-                }
             });
         }
     },
@@ -301,10 +313,15 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         var self = this;
         collection.fetch_nodes_by_ids_complete([model.id], true).then(function(collection) {
             var model = collection.at(0);
-            self.add_item("content_node", "resource", "", model);
+            self.add_item("content_node", "resource", model);
         });
 
         this.content_modal.close();
+    },
+    add_review: function(event) {
+        var story_id = $(event.target).data('story-id');
+        var page_title = $(event.target).data('page-number');
+        this.last_item.add_action("Review " + page_title, story_id);
     },
     create_new_view:function(model){
         var new_story_item =  new StoryItemView({
@@ -314,13 +331,13 @@ var StoryView = ExerciseViews.ExerciseView.extend({
             page_count: this.page_count++,
         });
         this.views.push(new_story_item);
+        if (!model.get("is_supplementary")) {
+            this.last_item = new_story_item;
+        }
         return new_story_item;
     },
     onchange: function() {
         this.is_changed = true;
-    },
-    zip_content: function() {
-
     },
     save_content: function() {
         this.collection.forEach(function(model) {
@@ -358,7 +375,9 @@ var StoryItemView = ExerciseViews.AssessmentItemView.extend({
         "click .delete": "delete",
         "click .toggle_story": "toggle_focus",
         "click .toggle" : "toggle",
-        "click .content_item": "load_preview"
+        "click .content_item": "load_preview",
+        "click .add_review": "add_review",
+        "click .add_supplementary": "add_supplementary"
     },
     render: function() {
 
@@ -396,7 +415,13 @@ var StoryItemView = ExerciseViews.AssessmentItemView.extend({
         var actions = JSON.parse(this.model.get('actions') || "{}");
         actions[story_item_id] = button_text;
         this.model.set("actions", JSON.stringify(actions));
-        console.log(this.model)
+        this.render_actions();
+    },
+    add_review: function() {
+        // Open modal, set action when done (reload actions)
+    },
+    add_supplementary: function() {
+        // Open file selector, don't render supplementary on tree
     },
     load_preview: function(event){
         var file = _.find(this.node.files, function(i) { return !i.preset.supplementary; });

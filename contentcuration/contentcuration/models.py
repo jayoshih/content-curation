@@ -907,7 +907,7 @@ class Invitation(models.Model):
         verbose_name = _("Invitation")
         verbose_name_plural = _("Invitations")
 
-ITEM_TYPES = ["content", "message"]
+ITEM_TYPES = ["content", "message", "link"]
 MESSAGE_TYPES = ["activity", "instructions", "message", "prompt", "reflection"]
 
 class Story(models.Model):
