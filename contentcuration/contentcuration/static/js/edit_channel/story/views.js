@@ -96,11 +96,15 @@ var StoryModalView = BaseViews.BaseModalView.extend({
 
     initialize: function(options) {
         this.modal = true;
-        this.render(this.close, {channel:window.current_channel.toJSON()});
+        this.selecting = options.selecting;
+        this.onselect = options.onselect;
+        this.render(this.close, {channel:window.current_channel.toJSON(), selecting: this.selecting});
         new StoryDisplayListView({
             el: this.$(".modal-body"),
             modal : this,
-            model:options.channel
+            model:options.channel,
+            selecting: this.selecting,
+            onselect: this.onselect
         });
     }
 });
@@ -114,6 +118,8 @@ var StoryDisplayListView = BaseViews.BaseEditableListView.extend({
     initialize: function(options) {
         this.bind_edit_functions();
         var self = this;
+        this.selecting = options.selecting;
+        this.onselect = options.onselect;
         this.collection = new Models.StoryCollection();
         this.collection.fetch_for_channel(this.model.id).then(function() {
             self.render();
@@ -123,7 +129,7 @@ var StoryDisplayListView = BaseViews.BaseEditableListView.extend({
         'click #new_story_button' : 'new_story'
     },
     render: function() {
-        this.$el.html(this.template(null, {
+        this.$el.html(this.template({selecting: this.selecting}, {
             data: this.get_intl_data()
         }));
         this.load_content();
@@ -132,6 +138,8 @@ var StoryDisplayListView = BaseViews.BaseEditableListView.extend({
         var newView = new StoryListItem({
             model: data,
             containing_list_view: this,
+            selecting: this.selecting,
+            onselect: this.onselect
         });
         this.views.push(newView);
         return newView;
@@ -159,20 +167,24 @@ var StoryListItem = BaseViews.BaseListEditableItemView.extend({
     template: require("./hbtemplates/story_list_item.handlebars"),
     initialize: function(options) {
         this.bind_edit_functions();
-        _.bindAll(this, 'delete_story');
+        this.selecting = options.selecting;
+        this.onselect = options.onselect;
+        _.bindAll(this, 'delete_story', 'zip_content');
         this.listenTo(this.model, "sync", this.render);
         this.render();
     },
     render: function() {
         this.$el.html(this.template({
             story: this.model.toJSON(),
-            channel: window.current_channel.id
+            channel: window.current_channel.id,
+            selecting: this.selecting
         }, {
             data: this.get_intl_data()
         }));
     },
     events: {
-        'click .delete_story' : 'delete_story'
+        'click .delete_story' : 'delete_story',
+        "click .zip_button": "zip_content"
     },
     delete_story: function(event){
         var self = this;
@@ -183,6 +195,14 @@ var StoryListItem = BaseViews.BaseListEditableItemView.extend({
             },
         }, null);
         self.cancel_actions(event);
+    },
+    zip_content: function() {
+        var self = this;
+        this.model.zip_story().then(function(collection) {
+            console.log(collection)
+            self.onselect(collection);
+        })
+
     }
 });
 

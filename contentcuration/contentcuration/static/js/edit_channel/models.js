@@ -1194,6 +1194,23 @@ var StoryModel = BaseModel.extend({
                 }
             });
         });
+    },
+    zip_story: function() {
+        var self = this;
+        return new Promise(function(resolve, reject){
+            $.ajax({
+                method:"GET",
+                url: window.Urls.zip_story(self.id),
+                error:reject,
+                success: function(content_node) {
+                    console.log(content_node)
+                    var new_story = new ContentNodeModel(JSON.parse(content_node));
+                    var collection = new ContentNodeCollection();
+                    collection.add(new_story);
+                    resolve(collection);
+                }
+            });
+        });
     }
 });
 

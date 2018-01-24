@@ -49,7 +49,8 @@ var MESSAGES = {
     "related_content_alert": "Related content will not be included in the copy of this content.",
     "delete_item_warning": "Are you sure you want to delete {data}?",
     "select_content_prompt": "Must select content first",
-    "copy_to_clipboard": "Copy to Clipboard"
+    "copy_to_clipboard": "Copy to Clipboard",
+    "add_story": "Add Story"
 }
 
 /**
@@ -319,7 +320,8 @@ var ContentList = BaseViews.BaseWorkspaceListView.extend({
 		'click .import_button':'import_content',
 		'click .back_button' :'close_container',
 		'click .upload_files_button': 'add_files',
-		'click .create_exercise_button' : 'add_exercise'
+		'click .create_exercise_button' : 'add_exercise',
+		'click .add_story_button': 'add_story'
 	},
 	render: function() {
 		this.$el.html(this.template({

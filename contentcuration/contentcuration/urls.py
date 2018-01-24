@@ -312,6 +312,7 @@ urlpatterns += [
 urlpatterns += [
     url(r'^api/get_stories/(?P<channel_id>[^/]+)$', story_views.get_stories, name='get_stories'),
     url(r'^api/get_story_items/(?P<story_id>[^/]+)$', story_views.get_story_items, name='get_story_items'),
+    url(r'^api/zip_story/(?P<story_id>[^/]+)$', story_views.zip_story, name='zip_story'),
     url(r'^channels/(?P<channel_id>[^/]{32})/stories/(?P<story_id>[0-9+])', story_views.channel_story, name='channel_story'),
 ]
 

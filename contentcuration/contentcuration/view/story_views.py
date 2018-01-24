@@ -9,7 +9,7 @@ from rest_framework.renderers import JSONRenderer
 
 from django.shortcuts import render, get_object_or_404, redirect
 from contentcuration.models import Channel, Story, StoryItem, MESSAGE_TYPES, ITEM_TYPES, FileFormat, License, FormatPreset, ContentKind, Language
-from contentcuration.serializers import StorySerializer, StoryItemSerializer, ChannelSerializer, CurrentUserSerializer, FileFormatSerializer, LicenseSerializer, FormatPresetSerializer, ContentKindSerializer, LanguageSerializer
+from contentcuration.serializers import StorySerializer, StoryItemSerializer, ContentNodeStorySerializer, ChannelSerializer, CurrentUserSerializer, FileFormatSerializer, LicenseSerializer, FormatPresetSerializer, ContentKindSerializer, LanguageSerializer
 from contentcuration.utils.messages import get_messages
 from le_utils.constants import format_presets, content_kinds, file_formats, licenses
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication, BasicAuthentication
@@ -31,6 +31,16 @@ def get_stories(request, channel_id):
 def get_story_items(request, story_id):
     story_items = StoryItem.objects.filter(story_id=story_id)
     return HttpResponse(JSONRenderer().render(StoryItemSerializer(story_items, many=True).data))
+
+@authentication_classes((TokenAuthentication, SessionAuthentication))
+@permission_classes((IsAuthenticated,))
+def zip_story(request, story_id):
+    story = Story.objects.get(pk=story_id)
+
+    # Need to return serialized content node item (use ContentNodeStorySerializer)
+    new_node = ContentNode()
+    return HttpResponse(JSONRenderer().render(ContentNodeStorySerializer(new_node).data))
+
 
 @login_required
 @authentication_classes((SessionAuthentication, BasicAuthentication, TokenAuthentication))

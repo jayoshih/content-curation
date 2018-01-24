@@ -706,7 +706,7 @@ var BaseWorkspaceListView = BaseEditableListView.extend({
 	bind_workspace_functions: function(){
 		this.bind_edit_functions();
 		_.bindAll(this, 'copy_selected', 'delete_selected', 'add_topic','add_nodes', 'drop_in_container','handle_drop', 'refresh_droppable',
-			'import_content', 'add_files', 'add_to_clipboard', 'add_to_trash','make_droppable', 'copy_collection', 'add_exercise');
+			'import_content', 'add_files', 'add_to_clipboard', 'add_to_trash','make_droppable', 'copy_collection', 'add_exercise', 'add_story');
 	},
 
 	copy_selected:function(){
@@ -894,6 +894,14 @@ var BaseWorkspaceListView = BaseEditableListView.extend({
 	            isclipboard: self.isclipboard
 	        });
         });
+	},
+	add_story:function(){
+		var StoryView = require("edit_channel/story/views");
+		var editor = new StoryView.StoryModalView({
+			channel : window.current_channel,
+			selecting: true,
+			onselect: this.add_nodes
+		});
 	}
 });
 
