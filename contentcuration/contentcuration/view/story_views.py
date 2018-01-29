@@ -48,7 +48,7 @@ def zip_story(request, story_id, parent_id):
         description=story.description or "",
         kind_id=content_kinds.HTML5,
         license = license,
-        sort_order = max_sort_order + 1,
+        sort_order = (max_sort_order or 0) + 1,
     )
     new_node.save()
     contents = open(tmp_zip_path, 'rb').read()

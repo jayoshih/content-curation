@@ -75,6 +75,7 @@ def render_story(story):
         zipwriter.write_contents('styles.css', STYLES)
         for story_item in sorted_story_items:
             render_story_item(zipwriter, story, story_item)
+            import pdb; pdb.set_trace()
     return temp_path
 
 

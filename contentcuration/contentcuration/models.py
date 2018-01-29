@@ -914,7 +914,7 @@ class Story(models.Model):
     """ Invitation to edit channel """
     title = models.CharField(max_length=200)
     storage_hash = models.CharField(max_length=50, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(default="")
     annotation = models.TextField(blank=True, null=True)
     channel = models.ForeignKey(Channel, related_name='channel', null=True)
 
