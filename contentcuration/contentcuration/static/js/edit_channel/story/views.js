@@ -113,6 +113,13 @@ var StoryModalView = BaseViews.BaseModalView.extend({
     selected: function(collection) {
         this.onselect(collection);
         this.close();
+    },
+    close: function() {
+        if(this.modal){
+            this.$(".modal").modal('hide');
+        }
+        this.remove();
+        $("body").removeClass("modal-open");
     }
 });
 
@@ -613,6 +620,13 @@ var StoryContentModalView = BaseViews.BaseModalView.extend({
             container: this
         });
     },
+    close: function() {
+        if(this.modal){
+            this.$(".modal").modal('hide');
+        }
+        this.remove();
+        $("body").removeClass("modal-open");
+    },
     onselect: function(model) {
         this.onselect(model);
     }
@@ -692,7 +706,7 @@ var StoryPreviewFileView = BaseViews.BaseModalView.extend({
         }));
         $("body").append(this.el);
         this.$("#story_preview_modal").modal({show: true});
-        this.$("#story_preview_modal").on("hidden.bs.modal", this.closed_modal);
+        this.$("#story_preview_modal").on("hidden.bs.modal", this.close);
     },
     create_preview: function(){
         var previewer = require('edit_channel/preview/views');
