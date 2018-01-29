@@ -16,6 +16,7 @@ from rest_framework.authentication import TokenAuthentication, SessionAuthentica
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import authentication_classes, permission_classes
 from contentcuration.views import get_or_set_cached_constants
+from contentcuration.utils.files import create_file_from_contents
 
 
 @authentication_classes((TokenAuthentication, SessionAuthentication))
@@ -38,16 +39,20 @@ def zip_story(request, story_id, parent_id):
     story = Story.objects.get(pk=story_id)
     from contentcuration.zipit import render_story
     tmp_zip_path = render_story(story)
+    license = License.objects.get(license_name=licenses.PUBLIC_DOMAIN)
+    parent = ContentNode.objects.get(pk=parent_id)
+    max_sort_order = parent.children.aggregate(max_count=Max("sort_order"))["max_count"]
     new_node = ContentNode(
         title=story.title,
         parent_id=parent_id,
-        description=story.description,
-        kind=content_kinds.HTML5.
-        licese_id = PUB
-        author='',
+        description=story.description or "",
+        kind_id=content_kinds.HTML5,
+        license = license,
+        sort_order = max_sort_order + 1,
     )
+    new_node.save()
     contents = open(tmp_zip_path, 'rb').read()
-    file_obj = create_file_from_contents(contents, ext='.'+file_formats.HTML5, node=new_node, preset_id=format_presets.HTML5_ZIP)
+    file_obj = create_file_from_contents(contents, ext=file_formats.HTML5, node=new_node, preset_id=format_presets.HTML5_ZIP)
     story.storage_hash = file_obj.checksum
     story.save()
     return HttpResponse(JSONRenderer().render(ContentNodeStorySerializer(new_node).data))
