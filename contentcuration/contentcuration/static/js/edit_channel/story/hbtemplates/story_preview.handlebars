@@ -1,0 +1,47 @@
+<div class="container-fluid" id="preview_story_item">
+    <div id="maindiv">
+
+      <div class="maincontent {{#if node}}{{ node.kind }}-kind{{else}}message-kind {{message_type}}-message_type{{/if}}">
+		<div class="{{#if node}}linkage-text{{else}}message_html{{/if}}">
+			{{{ markdown item.text }}}
+		</div>
+		{{#if node}}
+			<hr/>
+
+			<h3 class="content-title">{{ node.title }}</h3>
+			<p class="descr">
+				{{ node.description }}
+			</p>
+
+			{{#equal node.kind "audio"}}
+				<p>
+				    <audio controls>
+				      <source src="{{ file.storage_url }}" type="audio/mpeg">
+				      Your browser does not support the audio element.
+				    </audio>
+				</p>
+			{{else}}{{#equal node.kind "video"}}
+				<video width="640" height="480" controls>
+			        <source src="{{ file.storage_url }}" type="video/mp4">
+			        Your browser does not support the video tag.
+			    </video>
+			{{else}}{{#equal node.kind "document"}}
+				<embed src="{{ file.storage_url }}" width="100%" height="600" type='application/pdf'>
+			{{else}}{{#equal node.kind "html5"}}
+				<p>
+				    <iframe src="./{{ checksum }}/index.html" width="100%" height="100%" style="min-height:400px;"></iframe>
+				</p>
+			{{/equal}}{{/equal}}{{/equal}}{{/equal}}
+		{{/if}}
+      </div>
+
+    </div>
+</div>
+<br>
+<br>
+<div class="navigation_buttons message_only">
+	{{#each buttons}}
+		<div><a class="navigation-button {{#equal this 'NEXT'}}next-button{{else}}{{#equal this 'START'}}next-button{{else}}optional-button{{/equal}}{{/equal}} button" data-next="{{@key}}">{{this}}</a></div>
+	{{/each}}
+</div>
+

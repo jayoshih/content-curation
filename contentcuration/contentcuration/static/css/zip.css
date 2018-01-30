@@ -1,0 +1,44 @@
+body {
+    padding: 3em;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.button {
+    text-decoration: none;
+    color: initial;
+    display: inline-block;
+    padding: 10px 16px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.next-button {
+	color: white;
+    background: #996189;
+}
+
+.next-button:hover {
+	background: #72486F;
+}
+
+.optional-button {
+	color: #996189;
+	box-shadow: none;
+	margin-left: -16px;
+}
+
+.message_only .optional-button {
+	margin-left: 0;
+}
+
+.optional-button:hover {
+	background: #E0E0E0;
+}
+
+.message-kind .message_html, .message_only, .story-index-kind {
+	display: block;
+	margin: auto;
+	text-align: center;
+}

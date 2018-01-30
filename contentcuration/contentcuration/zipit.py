@@ -15,64 +15,12 @@ THUMBNAIL_FORMATS = [k for k,v in MAPPING.items() if v==THUMBNAIL]
 MESSAGE_TYPES = ["activity", "instructions", "message", "prompt", "reflection"]
 CONTENT_NODE_TYPE = 'content_node'
 
-
-STYLES = """
-
-body {
-    padding: 3em;
-    font-family: 'Noto Sans', sans-serif;
-}
-
-.button {
-    text-decoration: none;
-    color: initial;
-    display: inline-block;
-    padding: 10px 16px;
-    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    border-radius: 2px;
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-.next-button {
-	color: white;
-    background: #996189;
-}
-
-.next-button:hover {
-	background: #72486F;
-}
-
-.optional-button {
-	color: #996189;
-	box-shadow: none;
-	margin-left: -16px;
-}
-
-.message_only .optional-button {
-	margin-left: 0;
-}
-
-.optional-button:hover {
-	background: #E0E0E0;
-}
-
-.message-kind .message_html, .message_only, .story-index-kind {
-	display: block;
-	margin: auto;
-	text-align: center;
-}
-
-"""
-
-
-
 def render_story(story):
     sorted_story_items = StoryItem.objects.filter(story=story).order_by('order')
     fh, temp_path = tempfile.mkstemp(suffix=".zip")
     with HTMLWriter(write_to_path=temp_path) as zipwriter:
-        render_story_index(zipwriter, story, sorted_story_items[0])
-        zipwriter.write_contents('styles.css', STYLES)
+        render_story_index(zipwriter, story, sorted_story_items.filter(is_supplementary=False).first())
+        zipwriter.write_file(os.path.join(settings.BASE_DIR, "contentcuration", "static", "css", "zip.css"), filename='styles.css')
         for story_item in sorted_story_items:
             render_story_item(zipwriter, story, story_item)
     return temp_path

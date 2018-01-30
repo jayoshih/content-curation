@@ -2,6 +2,14 @@
 @import "modal-styles.less";
 @import "exercises.less";
 
+body {
+    padding: 0 !important;
+}
+
+#preview_story_item {
+    padding: 3%;
+}
+
 #story_modal_content{
     background-color:@gray-200;
     .modal-body{
@@ -105,6 +113,7 @@
                 width: 85%;
                 border: none;
             }
+            .preview_supplementary { cursor: pointer; }
             .glyphicon { cursor: pointer;}
         }
         .link-options {

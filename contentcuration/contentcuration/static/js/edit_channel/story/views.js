@@ -20,6 +20,7 @@ var toMarkdown = require('to-markdown');
 var stringHelper = require("edit_channel/utils/string_helper");
 
 /* STYLESHEETS */
+require("../../../css/zip.css");
 require("stories.less");
 require("../../../css/summernote.css");
 
@@ -256,7 +257,8 @@ var StoryView = ExerciseViews.ExerciseView.extend({
         "click #zipper": "zip_content",
         "change .story_field": "set_story",
         "click #addcontentitem": "add_content_item",
-        "click #addclipboarditem": "add_clipboard_item"
+        "click #addclipboarditem": "add_clipboard_item",
+        "click #preview_story": "preview_story"
     },
     render: function() {
         this.$el.html(this.template({
@@ -377,6 +379,12 @@ var StoryView = ExerciseViews.ExerciseView.extend({
             window.location = "/channels/" + window.current_channel.id + "/edit";
         });
     },
+    preview_story: function() {
+        new StoryPreviewModalView({
+            collection: this.collection,
+            model: this.model
+        });
+    }
 });
 
 var StoryItemView = ExerciseViews.AssessmentItemView.extend({
@@ -717,6 +725,115 @@ var StoryPreviewFileView = BaseViews.BaseModalView.extend({
     }
 });
 
+var StoryPreviewModalView = BaseViews.BaseModalView.extend({
+    modal: true,
+    header: null,
+    template: require("./hbtemplates/story_preview_modal.handlebars"),
+    name: NAMESPACE,
+    $trs: MESSAGES,
+    initialize: function(options) {
+        _.bindAll(this, 'toggle_fullscreen', 'exit_fullscreen');
+        this.collection = options.collection;
+        this.render(this.close, {});
+
+        var first_item = this.collection.chain().sortBy("order").find(function(i) { return !i.get("is_supplementary"); }).value();
+        this.switch_page(new Models.StoryItemModel({
+            "contentnode": {
+                "title": this.model.get("title"),
+                "description": this.model.get("description")
+            },
+            "actions": JSON.stringify({[first_item.id]: "START"})
+        }));
+    },
+    events: {
+        'click .view_fullscreen': 'toggle_fullscreen'
+    },
+    switch_page: function(story_item) {
+        this.startingView = new StoryPreviewView({
+            model: story_item,
+            el: this.$("#preview_window"),
+            container: this
+        });
+    },
+    navigate_to_page: function(id) {
+        var story_item = this.collection.find(function(i) { return i.id.toString() === id.toString(); });
+        this.switch_page(story_item);
+    },
+    toggle_fullscreen:function(){
+        var elem = document.getElementById("preview_window_wrapper");
+
+        if (!this.check_fullscreen()){
+            this.$("#preview_window_wrapper").addClass('preview_on');
+            this.$(".view_fullscreen").html("Hide Fullscreen");
+            if (elem.requestFullscreen) {
+              elem.requestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+              elem.msRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+              elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) {
+              elem.webkitRequestFullscreen();
+            }
+            $(document).on('webkitfullscreenchange', this.exit_fullscreen);
+            $(document).on('mozfullscreenchange', this.exit_fullscreen);
+            $(document).on('fullscreenchange', this.exit_fullscreen);
+        }else{
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    },
+    exit_fullscreen:function(){
+        if (!this.check_fullscreen()){
+            this.$("#preview_window_wrapper").removeClass('preview_on');
+            this.$(".view_fullscreen").html("Show Fullscreen");
+            $(document).off('webkitfullscreenchange');
+            $(document).off('mozfullscreenchange');
+            $(document).off('fullscreenchange');
+            $(document).off('MSFullscreenChange');
+        }
+    },
+    check_fullscreen: function() {
+        return !((document.fullScreenElement !== undefined && document.fullScreenElement === null) ||
+         (document.msFullscreenElement !== undefined && document.msFullscreenElement === null) ||
+         (document.mozFullScreen !== undefined && !document.mozFullScreen) ||
+         (document.webkitIsFullScreen !== undefined && !document.webkitIsFullScreen));
+    }
+});
+
+var StoryPreviewView = BaseViews.BaseView.extend({
+    template: require("./hbtemplates/story_preview.handlebars"),
+    name: NAMESPACE,
+    $trs: MESSAGES,
+    initialize: function(options) {
+        this.container = options.container;
+        this.render();
+    },
+    events: {
+        "click .navigation-button": "navigate",
+    },
+    render: function() {
+        var node = this.model.get("contentnode");
+        node = node && node.attributes || node;
+        this.$el.html(this.template({
+            item: this.model.toJSON(),
+            node: node,
+            buttons: JSON.parse(this.model.get("actions")),
+            file: node && _.find(node.files, function(f) { return !f.preset.supplementary; })
+        }, {
+            data: this.get_intl_data()
+        }));
+    },
+    navigate: function(event){
+        this.container.navigate_to_page($(event.target).data('next'));
+    }
+});
 
 
 module.exports = {
