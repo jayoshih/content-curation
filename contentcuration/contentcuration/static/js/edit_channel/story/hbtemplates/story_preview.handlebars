@@ -3,7 +3,7 @@
 
       <div class="maincontent {{#if node}}{{ node.kind }}-kind{{else}}message-kind {{message_type}}-message_type{{/if}}">
 		<div class="{{#if node}}linkage-text{{else}}message_html{{/if}}">
-			{{{ markdown item.text }}}
+			{{{ markdown item.text true }}}
 		</div>
 		{{#if node}}
 			<hr/>
