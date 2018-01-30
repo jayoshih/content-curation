@@ -36,21 +36,19 @@ Handlebars.registerHelper('url', function(url_name) {
 });
 
 // A little bit of magic to let us render markdown into a Handlebars template
-Handlebars.registerHelper('markdown', function(markdown, process_images) {
+Handlebars.registerHelper('markdown', function(markdown) {
   markdown = markdown || "";
   markdown = markdown.toString().replace(/\n(\n)/g, "$1<br />");
 
   // Replace any image placeholders
-  if(process_images) {
-    var IMG_REGEX = /\${☣ CONTENTSTORAGE}\/([^)]+)/g;
-    var matches = markdown.match(IMG_REGEX);
-    if(matches){
-        matches.forEach(function(match){
-            var filename = match.split("/").slice(-1)[0];
-            var replace_str = "/content/storage/" + filename.charAt(0) + "/" + filename.charAt(1) + "/" + filename;
-            markdown = markdown.replace(match, replace_str);
-        })
-    }
+  var IMG_REGEX = /\${☣ CONTENTSTORAGE}\/([^)]+)/g;
+  var matches = markdown.match(IMG_REGEX);
+  if(matches){
+      matches.forEach(function(match){
+          var filename = match.split("/").slice(-1)[0];
+          var replace_str = "/content/storage/" + filename.charAt(0) + "/" + filename.charAt(1) + "/" + filename;
+          markdown = markdown.replace(match, replace_str);
+      })
   }
 
   // Escape underscores to allow "blanks"
