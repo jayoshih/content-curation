@@ -1,15 +1,23 @@
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.template.loader import get_template
 import os
 import json
 import markdown
+import re
+import sys
 import tempfile
 import zipfile
 
-from contentcuration.models import ContentNode, Story, StoryItem
+from contentcuration.models import ContentNode, Story, StoryItem, generate_file_on_disk_name
 from contentcuration.html_writer import HTMLWriter
 from le_utils.constants.file_types import MAPPING, THUMBNAIL
+from le_utils.constants.exercises import CONTENT_STORAGE_PLACEHOLDER
+
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 THUMBNAIL_FORMATS = [k for k,v in MAPPING.items() if v==THUMBNAIL]
 
 MESSAGE_TYPES = ["activity", "instructions", "message", "prompt", "reflection"]
@@ -61,9 +69,44 @@ def buttons_form_actions(actions):
         buttons.append(button)
     return buttons
 
+def process_image(zipwriter, content):
+    image_list = []
+
+    for match in re.finditer(ur'!\[(?:[^\]]*)]\(([^\)]+)\)', content):
+        img_match = re.search('{}(/[^\s]+)(?:\s=([0-9\.]+)x([0-9\.]+))*'.format(CONTENT_STORAGE_PLACEHOLDER), match.group(1).encode('utf-8'))
+        if img_match:
+
+            # Add image files to zipwriter
+            filename = img_match.group(1).split('/')[-1]
+            checksum, ext = os.path.splitext(filename)
+            fpath = generate_file_on_disk_name(checksum, filename)
+            img_path = zipwriter.write_file(abs_path, directory="img")
+            import pdb; pdb.set_trace()
+
+
+
+
+            image_name = "images/{}.{}".format(checksum, ext[1:])
+            if image_name not in zf.namelist():
+                with open(ccmodels.generate_file_on_disk_name(checksum, filename), 'rb') as imgfile:
+                    write_to_zipfile(image_name, imgfile.read(), zf)
+
+            # Add resizing data
+            if img_match.group(2) and img_match.group(3):
+                image_data = {'name': img_match.group(1)}
+                image_data.update({'width': float(img_match.group(2))})
+                image_data.update({'height': float(img_match.group(3))})
+                image_list.append(image_data)
+            content = content.replace(match.group(1), img_match.group(1))
+
+    import pdb; pdb.set_trace()
+    return content, image_list
 
 def render_message(zipwriter, story, story_item):
-    html = markdown.markdown(story_item.text)
+    text = process_image(zipwriter, story_item.text)
+    html = markdown.markdown(text)
+    soup = BeautifulSoup(html, 'html.parser')
+
     print 'in render_message', story_item.id, html, story_item.actions
 
     actions = json.loads(story_item.actions)
