@@ -37,6 +37,33 @@ var PROMPT_MAPPING = {
 }
 
 
+var StoryImageUploadView = ImageUploader.ImageUploadView.extend({
+    render: function() {
+        this.$el.html(this.modal_template(null, {
+            data: this.get_intl_data()
+        }));
+        $("body").append(this.el);
+        this.$(".modal").modal({show: true});
+        this.$(".modal").on("hide.bs.modal", this.close);
+        this.$(".modal").on("shown.bs.modal", this.init_focus);
+        _.defer(this.render_dropzone);
+    }
+});
+
+var StoryUploadImage = function (context) {
+    return $.summernote.ui.button({
+        contents: '<i class="note-icon-picture"/>',
+        tooltip: 'Image',
+        click: function () {
+            var view = new StoryImageUploadView({
+                callback: context.options.callbacks.onImageUpload,
+                preset_id: 'exercise_image'
+            });
+        }
+    }).render();
+}
+
+
 /*********** TEXT EDITOR FOR QUESTIONS, ANSWERS, AND HINTS ***********/
 var StoryEditorView = ExerciseViews.EditorView.extend({
 
@@ -55,7 +82,7 @@ var StoryEditorView = ExerciseViews.EditorView.extend({
                 ['controls', ['customundo', 'customredo']]
             ],
             buttons: {
-                customupload: ExerciseViews.UploadImage,
+                customupload: StoryUploadImage,
                 customundo: ExerciseViews.UndoButton,
                 customredo: ExerciseViews.RedoButton
             },
