@@ -29,7 +29,8 @@
 				<embed src="{{ file.storage_url }}" width="100%" height="600" type='application/pdf'>
 			{{else}}{{#equal node.kind "html5"}}
 				<p>
-				    <iframe src="./{{ checksum }}/index.html" width="100%" height="100%" style="min-height:400px;"></iframe>
+					<iframe src="/zipcontent/{{file.checksum}}.{{file.file_format}}" width="100%" height="100%" style="min-height:400px;" sandbox="allow-scripts"></iframe>
+
 				</p>
 			{{/equal}}{{/equal}}{{/equal}}{{/equal}}
 		{{/if}}

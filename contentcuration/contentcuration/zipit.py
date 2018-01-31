@@ -69,8 +69,8 @@ def buttons_form_actions(actions):
         buttons.append(button)
     return buttons
 
-def process_image(zipwriter, content):
-    image_list = []
+def add_images_to_zip(zipwriter, content):
+    image_list = {}
 
     for match in re.finditer(ur'!\[(?:[^\]]*)]\(([^\)]+)\)', content):
         img_match = re.search('{}(/[^\s]+)(?:\s=([0-9\.]+)x([0-9\.]+))*'.format(CONTENT_STORAGE_PLACEHOLDER), match.group(1).encode('utf-8'))
@@ -80,32 +80,28 @@ def process_image(zipwriter, content):
             filename = img_match.group(1).split('/')[-1]
             checksum, ext = os.path.splitext(filename)
             fpath = generate_file_on_disk_name(checksum, filename)
-            img_path = zipwriter.write_file(abs_path, directory="img")
-            import pdb; pdb.set_trace()
-
-
-
-
-            image_name = "images/{}.{}".format(checksum, ext[1:])
-            if image_name not in zf.namelist():
-                with open(ccmodels.generate_file_on_disk_name(checksum, filename), 'rb') as imgfile:
-                    write_to_zipfile(image_name, imgfile.read(), zf)
+            img_path = zipwriter.write_file(fpath, directory="img")
 
             # Add resizing data
-            if img_match.group(2) and img_match.group(3):
-                image_data = {'name': img_match.group(1)}
-                image_data.update({'width': float(img_match.group(2))})
-                image_data.update({'height': float(img_match.group(3))})
-                image_list.append(image_data)
-            content = content.replace(match.group(1), img_match.group(1))
+            image_list.update({
+                img_path: {
+                    'width': img_match.group(2) and float(img_match.group(2)),
+                    'height': img_match.group(3) and float(img_match.group(3)),
+                }
+            })
+            content = content.replace(match.group(1), img_path)
 
-    import pdb; pdb.set_trace()
     return content, image_list
 
 def render_message(zipwriter, story, story_item):
-    text = process_image(zipwriter, story_item.text)
+    text, images = add_images_to_zip(zipwriter, story_item.text)
     html = markdown.markdown(text)
     soup = BeautifulSoup(html, 'html.parser')
+
+    # Assign sizes
+    for img in soup.find_all('img'):
+        img['width'] = images[img['src']]['width']
+        img['height'] = images[img['src']]['height']
 
     print 'in render_message', story_item.id, html, story_item.actions
 
@@ -117,7 +113,7 @@ def render_message(zipwriter, story, story_item):
         'head_title': 'Message story item',
         'meta_description': '',
         'message_type': story_item.message_type,
-        'message_html': html,
+        'message_html': soup.renderContents(),
         'buttons': buttons,
     }
     item_html = template.render(context)
