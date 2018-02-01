@@ -1,6 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from rest_framework import permissions
-from contentcuration.models import Channel, ContentNode, ContentTag, File, User, AssessmentItem, Invitation
+from contentcuration.models import Channel, ContentNode, ContentTag, File, User, AssessmentItem, Invitation, Story, StoryItem
 
 
 def user_can_edit(user, channel):
@@ -32,11 +32,14 @@ class CustomPermission(permissions.BasePermission):
         elif isinstance(obj, ContentNode):
             if user_can_edit(request.user, obj.get_channel()):
                 return True
-        elif isinstance(obj, ContentTag):
+        elif isinstance(obj, ContentTag) or isinstance(obj, Story):
             if user_can_edit(request.user, obj.channel):
                 return True
         elif isinstance(obj, File) or isinstance(obj, AssessmentItem):
             if user_can_edit(request.user, obj.contentnode and obj.contentnode.get_channel()):
+                return True
+        elif isinstance(obj, StoryItem):
+            if user_can_edit(request.user, obj.story.channel):
                 return True
 
         raise PermissionDenied("Cannot edit models without editing permissions")

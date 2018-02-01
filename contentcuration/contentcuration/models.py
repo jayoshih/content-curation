@@ -919,6 +919,10 @@ class Story(models.Model):
     annotation = models.TextField(blank=True, default="")
     channel = models.ForeignKey(Channel, related_name='channel', null=True)
 
+    class Meta:
+        verbose_name = _("Story")
+        verbose_name_plural = _("Stories")
+
 class StoryItem(models.Model):
     story = models.ForeignKey(Story, related_name='story_item', null=True)
     order = models.IntegerField(default=1, verbose_name=_("sort order"))
@@ -928,3 +932,7 @@ class StoryItem(models.Model):
     node_id = models.CharField(max_length=50, blank=True, null=True)
     actions = models.TextField(default="{}")
     is_supplementary = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _("Story Item")
+        verbose_name_plural = _("Story Items")
