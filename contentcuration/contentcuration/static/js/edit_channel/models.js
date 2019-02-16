@@ -1295,6 +1295,99 @@ var AssessmentItemCollection = BaseCollection.extend({
     }
 });
 
+
+
+var StoryModel = BaseModel.extend({
+    root_list:"story-list",
+    model_name:"StoryModel",
+    defaults: {
+        title: "New Story"
+    },
+    fetch_items: function() {
+        var self = this;
+        return new Promise(function(resolve, reject){
+            $.ajax({
+                method:"GET",
+                url: window.Urls.get_story_items(self.id),
+                error:reject,
+                success: function(story_items) {
+                    resolve(new StoryItemCollection(JSON.parse(story_items)));
+                }
+            });
+        });
+    },
+    zip_story: function(parent_id) {
+        var self = this;
+        return new Promise(function(resolve, reject){
+            $.ajax({
+                method:"GET",
+                url: window.Urls.zip_story(self.id, parent_id),
+                error:reject,
+                success: function(content_node) {
+                    var new_story = new ContentNodeModel(JSON.parse(content_node));
+                    var collection = new ContentNodeCollection();
+                    collection.add(new_story);
+                    resolve(collection);
+                }
+            });
+        });
+    }
+});
+
+var StoryCollection = BaseCollection.extend({
+    model: StoryModel,
+    list_name:"story-list",
+    model_name:"StoryCollection",
+
+    fetch_for_channel: function(channel_id){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            $.ajax({
+                method:"GET",
+                url: window.Urls.get_stories(channel_id),
+                error:reject,
+                success: function(stories) {
+                    self.reset(JSON.parse(stories));
+                    resolve(self);
+                }
+            });
+        });
+    }
+});
+
+var StoryItemModel = BaseModel.extend({
+    root_list:"storyitem-list",
+    model_name:"StoryItemModel",
+    defaults: {
+        type: "message",
+        item_type: "message",
+        content: "message"
+    }
+});
+
+var StoryItemCollection = BaseCollection.extend({
+    model: StoryItemModel,
+    model_name:"StoryItemCollection",
+    comparator : function(item){
+        return item.get("order");
+    },
+    save:function(){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            Backbone.sync("update", self, {
+                url: self.model.prototype.urlRoot(),
+                success:function(data){
+                    resolve(new StoryItemCollection(data));
+                },
+                error:function(error){
+                    reject(error);
+                }
+            });
+        });
+    }
+});
+
+
 module.exports = {
     fetch_nodes_by_ids: fetch_nodes_by_ids,
     ContentNodeModel: ContentNodeModel,
@@ -1323,4 +1416,8 @@ module.exports = {
     AssessmentItemCollection: AssessmentItemCollection,
     ChannelSetModel: ChannelSetModel,
     ChannelSetCollection: ChannelSetCollection,
+    StoryModel:StoryModel,
+    StoryCollection: StoryCollection,
+    StoryItemModel: StoryItemModel,
+    StoryItemCollection: StoryItemCollection
 }

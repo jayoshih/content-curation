@@ -9,7 +9,7 @@ var URL_CHAR_LIMIT = 7;
 
 var ChannelEditRouter  = Backbone.Router.extend({
   initialize: function(options) {
-    _.bindAll(this, "navigate_channel_home", "preview_page", "edit_page", "clipboard_page");
+    _.bindAll(this, "navigate_channel_home", "preview_page", "edit_page", "clipboard_page", "story_page");
 	},
 
   routes: {
@@ -17,7 +17,8 @@ var ChannelEditRouter  = Backbone.Router.extend({
 		":channel/edit(/:topic)(/:node)": "edit_page",
 		":channel/staging(/:topic)(/:node)": "staging_page",
 		":channel/view(/:topic)(/:node)": "preview_page",
-		":channel/clipboard(/:topic)(/:node)": "clipboard_page"
+		":channel/clipboard(/:topic)(/:node)": "clipboard_page",
+		":channel/stories/:story_id": "story_page"
   },
 
 	navigate_channel_home: function() {
@@ -78,6 +79,14 @@ var ChannelEditRouter  = Backbone.Router.extend({
 		urlString += (State.topic)? "/" + State.topic.substring(0, URL_CHAR_LIMIT) : "";
 		urlString += (State.node) ? "/" + State.node.substring(0, URL_CHAR_LIMIT) : "";
 		this.navigate(urlString, {replace: !replacement});
+	},
+	story_page: function(channel, story_id){
+		var Models = require("edit_channel/models");
+		var StoryViews = require("edit_channel/story/views");
+		var story_view = new StoryViews.StoryView({
+			el: $("#story-container"),
+			model: new Models.StoryModel(window.story)
+		});
 	}
 });
 

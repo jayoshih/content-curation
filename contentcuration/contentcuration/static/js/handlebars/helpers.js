@@ -41,6 +41,17 @@ Handlebars.registerHelper('markdown', function(markdown) {
   markdown = markdown || "";
   markdown = markdown.toString().replace(/\n(\n)/g, "$1<br />");
 
+  // Replace any image placeholders
+  var IMG_REGEX = /\${☣ CONTENTSTORAGE}\/([^)]+)/g;
+  var matches = markdown.match(IMG_REGEX);
+  if(matches){
+      matches.forEach(function(match){
+          var filename = match.split("/").slice(-1)[0];
+          var replace_str = "/content/storage/" + filename.charAt(0) + "/" + filename.charAt(1) + "/" + filename;
+          markdown = markdown.replace(match, replace_str);
+      })
+  }
+
   // Escape underscores to allow "blanks"
   var matches = markdown.match(/([_]{3,})/g);
   if(matches){
@@ -52,12 +63,12 @@ Handlebars.registerHelper('markdown', function(markdown) {
   var el = document.createElement( 'body' );
   el.innerHTML = marked(markdown);
   _.each(el.getElementsByTagName( 'img' ), function(img){
-      var groups = /(.+)\s=([0-9|.]*)x((?:[0-9|.]*))/g.exec(unescape(img.src));
-      if(groups){
-        if(groups[1]) {img.src = groups[1];}
-        if(groups[2]) {img.width = groups[2];}
-        if(groups[3]) {img.height = groups[3];}
-      }
+    var groups = /(.+)\s=([0-9|.]*)x((?:[0-9|.]*))/g.exec(unescape(img.src));
+    if(groups){
+      if(groups[1]) {img.src = groups[1];}
+      if(groups[2]) {img.width = groups[2];}
+      if(groups[3]) {img.height = groups[3];}
+    }
   });
   return stringHelper.unescape(el.innerHTML);
 });

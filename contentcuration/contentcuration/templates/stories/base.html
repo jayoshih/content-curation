@@ -1,0 +1,49 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ head_title }}</title>
+  <meta name="description" content="{{ meta_description }}">
+  <meta name="author" content="Learning Equality">
+
+  <link rel="stylesheet" href="./styles.css">
+
+  {% block extrahead %}
+  {% endblock %}
+</head>
+
+
+<body>
+
+      {% block headernavbar %}
+      <header>
+        <!-- put navbar here -->
+      </header>
+      <br/>
+      <br/>
+      {% endblock %}
+
+
+      {% block maincontent %}
+
+        CONTENT GOES HERE!
+
+      {% endblock %}
+
+
+      <br>
+      <br>
+      {% block footer %}
+      <div class="navigation_buttons message_only">
+
+      {% for button in buttons %}
+        <div><a href="{{ button.href }}" class="{{ button.class }} button">{{ button.text }}</a></div>
+      {% endfor %}
+      </div>
+      {% endblock %}
+
+<!-- <script src="./js/scripts.js"></script>  -->
+
+</body>
+</html>

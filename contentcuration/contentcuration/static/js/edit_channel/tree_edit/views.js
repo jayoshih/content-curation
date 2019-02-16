@@ -61,7 +61,8 @@ var MESSAGES = {
     "coach": "Coach",
     "coach_title": "This resource is visible to coaches",
     "coach_topic_title": "This topic contains coach-facing resources",
-    "saving": "Saving, please wait..."
+    "saving": "Saving, please wait...",
+    "add_story": "Add Story"
 }
 
 /**
@@ -97,7 +98,8 @@ var TreeEditView = BaseViews.BaseWorkspaceView.extend({
 		'click .sync_button' : 'sync_content',
 		'click .move_button' : 'move_items',
 		'click .approve_channel' : 'activate_channel',
-		'click .stats_button': 'open_stats'
+		'click .stats_button': 'open_stats',
+		'click .story_button': 'open_story_editor'
 	},
 	edit_content:function(){ this.edit_selected(this.is_edit_page)},
 	render: function() {
@@ -346,7 +348,8 @@ var ContentList = BaseViews.BaseWorkspaceListView.extend({
 		'click .import_button':'import_content',
 		'click .back_button' :'close_container',
 		'click .upload_files_button': 'add_files',
-		'click .create_exercise_button' : 'add_exercise'
+		'click .create_exercise_button' : 'add_exercise',
+		'click .add_story_button': 'add_story'
 	},
 	render: function() {
 		this.$el.html(this.template({

@@ -1,0 +1,34 @@
+{% extends "stories/base.html" %}
+
+{% block maincontent %}
+
+<div class="container">
+
+    <div id="maindiv">
+
+      <div class="maincontent {{ node.kind }}-kind">
+
+          <div class="linkage-text">
+              {{ message_html|safe }}
+          </div>
+
+          <hr/>
+
+          <h3 class="content-title">{{ node.title }}</h3>
+          <p class="descr">
+              {{ node.description }}
+          </p>
+
+          {% block contentnode %}
+
+          <!-- the specific ContentNode subclass will replace this block -->
+
+          {% endblock %}
+
+      </div>
+
+
+    </div>
+
+</div><!-- /.container -->
+{% endblock %}

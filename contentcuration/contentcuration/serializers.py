@@ -36,6 +36,8 @@ from contentcuration.models import Language
 from contentcuration.models import License
 from contentcuration.models import PrerequisiteContentRelationship
 from contentcuration.models import SecretToken
+from contentcuration.models import Story
+from contentcuration.models import StoryItem
 from contentcuration.models import User
 from contentcuration.statistics import record_node_addition_stats
 from contentcuration.utils.channelcache import ChannelCacher
@@ -85,6 +87,34 @@ class FormatPresetSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'readable_name', 'multi_language', 'supplementary', 'thumbnail', 'subtitle', 'order', 'kind',
             'allowed_formats', 'associated_mimetypes', 'display')
+
+
+class StoryItemListSerializer(serializers.ListSerializer):
+    def update(self, instance, validated_data):
+        ret = []
+        update_stories = {}
+
+        with transaction.atomic():
+            for item in validated_data:
+
+                # User should not be able to change files without a display
+                if 'id' in item:
+                    update_stories[item['id']] = item
+                else:
+                    # create new nodes
+                    ret.append(StoryItem.objects.create(**item))
+
+        if update_stories:
+            with transaction.atomic():
+                for file_id, data in update_stories.items():
+                    file_obj, _new = StoryItem.objects.get_or_create(pk=file_id)
+
+                    # potential optimization opportunity
+                    for attr, value in data.items():
+                        setattr(file_obj, attr, value)
+                    file_obj.save()
+                    ret.append(file_obj)
+        return ret
 
 
 class FileListSerializer(serializers.ListSerializer):
@@ -451,7 +481,7 @@ class SimplifiedContentNodeSerializer(BulkSerializerMixin, serializers.ModelSeri
     class Meta:
         model = ContentNode
         fields = ('title', 'id', 'sort_order', 'kind', 'children', 'parent', 'metadata', 'content_id', 'prerequisite',
-                  'is_prerequisite_of', 'parent_title', 'ancestors', 'tree_id', 'language', 'role_visibility')
+                  'is_prerequisite_of', 'parent_title', 'ancestors', 'tree_id', 'language', 'role_visibility', 'node_id')
 
 
 """ Shared methods across content node serializers """
@@ -594,6 +624,15 @@ class ContentNodeSerializer(SimplifiedContentNodeSerializer, ContentNodeFieldMix
                   'kind', 'parent', 'children', 'published', 'associated_presets', 'valid', 'metadata', 'original_source_node_id',
                   'tags', 'extra_fields', 'prerequisite', 'is_prerequisite_of', 'node_id', 'tree_id', 'publishing', 'freeze_authoring_data',
                   'role_visibility', 'provider', 'aggregator', 'thumbnail_src')
+
+
+class ContentNodeStorySerializer(ContentNodeSerializer):
+    files = FileSerializer(many=True, read_only=True)
+
+    class Meta:
+        list_serializer_class = CustomListSerializer
+        model = ContentNode
+        fields = ('title', 'id', 'description', 'author', 'node_id', 'files', 'kind',  'associated_presets', 'thumbnail_encoding')
 
 
 class ContentNodeEditSerializer(ContentNodeSerializer):
@@ -915,3 +954,26 @@ class ChannelSetSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChannelSet
         fields = ('id', 'name', 'description', 'public', 'editors', 'channels', 'secret_token')
+
+
+class StoryItemSerializer(BulkSerializerMixin, serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    contentnode = serializers.SerializerMethodField('get_node')
+
+    def get_node(self, item):
+        if item.node_id and item.story:
+            node = ContentNode.objects.prefetch_related("files").filter(node_id=item.node_id, tree_id=item.story.channel.main_tree.tree_id).first()
+            return node and ContentNodeStorySerializer(node).data
+
+    class Meta:
+        list_serializer_class = StoryItemListSerializer
+        model = StoryItem
+        fields = ('id', 'order', 'item_type', 'message_type', 'node_id', 'actions', 'is_supplementary', 'text', 'contentnode', 'story')
+
+
+class StorySerializer(BulkSerializerMixin, serializers.ModelSerializer):
+    items = StoryItemSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Story
+        fields = ('id', 'title', 'description', 'annotation', 'items', 'channel')

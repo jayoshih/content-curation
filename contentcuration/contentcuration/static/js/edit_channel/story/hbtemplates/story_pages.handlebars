@@ -1,0 +1,5 @@
+<ul class="list-unstyled page_list">
+	{{#each pages}}
+	<li data-id="{{id}}" data-page-title="{{title}}" data-page={{page}} class="page_select">{{#if page}}Page {{page}}{{else}}Supplementary{{/if}}: {{title}}</li>
+	{{/each}}
+</ul>

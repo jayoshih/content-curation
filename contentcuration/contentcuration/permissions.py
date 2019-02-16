@@ -8,6 +8,8 @@ from contentcuration.models import ContentNode
 from contentcuration.models import ContentTag
 from contentcuration.models import File
 from contentcuration.models import Invitation
+from contentcuration.models import Story
+from contentcuration.models import StoryItem
 from contentcuration.models import User
 
 
@@ -47,11 +49,14 @@ class CustomPermission(permissions.BasePermission):
         elif isinstance(obj, ContentNode):
             if user_can_edit(request.user, obj.get_channel()):
                 return True
-        elif isinstance(obj, ContentTag):
+        elif isinstance(obj, ContentTag) or isinstance(obj, Story):
             if user_can_edit(request.user, obj.channel):
                 return True
         elif isinstance(obj, File) or isinstance(obj, AssessmentItem):
             if user_can_edit(request.user, obj.contentnode and obj.contentnode.get_channel()):
+                return True
+        elif isinstance(obj, StoryItem):
+            if user_can_edit(request.user, obj.story.channel):
                 return True
 
         raise PermissionDenied("Cannot edit models without editing permissions")

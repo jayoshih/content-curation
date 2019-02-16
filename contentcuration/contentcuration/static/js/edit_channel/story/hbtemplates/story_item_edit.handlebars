@@ -1,0 +1,38 @@
+<h3 class="uppercase story_item_page"><span class="glyphicon glyphicon-bookmark"></span> &nbsp;Page {{page_count}}: {{model.message_type}}</h3>
+<div class="assessment_item container-fluid edit_story_item">
+	<div class="main_edit_area">
+		<div class="question_area toggle_story">
+			<div class="row">
+				<div class="col-sm-12">
+				  	<div class="question text editable" data-ph="Text"></div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{{#if node}}
+<div class="content_item container-fluid edit_story_item">
+	<div class="col-xs-2">
+		<img src="{{#if thumbnail}}{{thumbnail.storage_url}}{{else}}/static/img/kolibri_placeholder.png{{/if}}" class="story_thumbnail">
+	</div>
+	<div class="col-xs-10">
+		<h4><span class="{{#get_icon node.kind}}{{/get_icon}}" aria-hidden="true"></span> {{node.title}}</h4>
+		<p><i>{{node.author}}</i></p>
+		<p>{{node.description}}</p>
+	</div>
+</div>
+{{/if}}
+<div class="container-fluid linked-actions"></div>
+<div class="container-fluid link-options">
+	Add Link:
+	<a class="action-text go_to_page_link" tabindex="0" data-id="#pages_{{model.id}}">Within Story</a>
+	| <a class="action-text add_supplementary">Supplementary Material</a>
+	| <a class="action-text add_upload">Upload</a>
+</div>
+
+
+<div class="popover" tabindex="0" role="popover" id="pages_{{model.id}}">
+	<div class="arrow"></div>
+	<div class="popover-content page_popover"><i>Loading...</i></div>
+</div>

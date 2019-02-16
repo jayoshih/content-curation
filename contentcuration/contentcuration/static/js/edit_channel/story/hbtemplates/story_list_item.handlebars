@@ -1,0 +1,11 @@
+<div class="row">
+	<div class="col-xs-10">
+		<h4 class="truncate story_name" title="{{story.title}}">{{story.title}}</h4>
+		<p class="description wordwrap" title="{{story.description}}">{{story.description}}</p>
+	</div>
+	<div class="col-xs-2"><h4>
+		{{#if selecting}}
+			<a class="action-text zip_button">ZIP IT!</a>
+		{{else}}<a class="action-text" href="/channels/{{channel}}/stories/{{story.id}}">EDIT</a>{{/if}}
+	</h4></div>
+</div>

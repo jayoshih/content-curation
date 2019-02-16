@@ -245,6 +245,7 @@ var BasePrerequisiteView = BaseViews.BaseView.extend({
         _.bindAll(this, 'render');
         this.modal = options.modal;
         this.model = options.model;
+        this.id_name = options.id_name || "parent";
         this.allow_edit = options.allow_edit;
         this.collection = new Models.ContentNodeCollection();
         this.container = options.container;
@@ -490,5 +491,8 @@ var RelatedItem = BasePrerequisiteItem.extend({
 
 module.exports = {
     PrerequisiteModalView: PrerequisiteModalView,
-    PrerequisiteView:PrerequisiteView
+    PrerequisiteView:PrerequisiteView,
+    RelatedView: RelatedView,
+    RelatedList: RelatedList,
+    RelatedItem: RelatedItem
 }

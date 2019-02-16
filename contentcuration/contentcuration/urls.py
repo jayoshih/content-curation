@@ -36,6 +36,7 @@ import contentcuration.views.internal as internal_views
 import contentcuration.views.nodes as node_views
 import contentcuration.views.public as public_views
 import contentcuration.views.settings as settings_views
+import contentcuration.views.story_views as story_views
 import contentcuration.views.users as registration_views
 import contentcuration.views.zip as zip_views
 from contentcuration.forms import ForgotPasswordForm
@@ -53,6 +54,8 @@ from contentcuration.models import FormatPreset
 from contentcuration.models import Invitation
 from contentcuration.models import Language
 from contentcuration.models import License
+from contentcuration.models import Story
+from contentcuration.models import StoryItem
 from contentcuration.models import User
 
 
@@ -114,6 +117,16 @@ class FileFormatViewSet(viewsets.ModelViewSet):
 class FormatPresetViewSet(viewsets.ModelViewSet):
     queryset = FormatPreset.objects.all()
     serializer_class = serializers.FormatPresetSerializer
+
+
+class StoryViewSet(viewsets.ModelViewSet):
+    queryset = Story.objects.all()
+    serializer_class = serializers.StorySerializer
+
+
+class StoryItemViewSet(BulkModelViewSet):
+    queryset = StoryItem.objects.all()
+    serializer_class = serializers.StoryItemSerializer
 
 
 class ContentKindViewSet(viewsets.ModelViewSet):
@@ -195,11 +208,13 @@ router.register(r'tag', TagViewSet)
 router.register(r'contentkind', ContentKindViewSet)
 router.register(r'user', UserViewSet)
 router.register(r'invitation', InvitationViewSet)
+router.register(r'story', StoryViewSet)
 
 bulkrouter = BulkRouter(trailing_slash=False)
 bulkrouter.register(r'assessmentitem', AssessmentItemViewSet)
 bulkrouter.register(r'contentnode', ContentNodeViewSet)
 bulkrouter.register(r'file', FileViewSet)
+bulkrouter.register(r'storyitem', StoryItemViewSet)
 
 urlpatterns = [
     url(r'^$', views.base, name='base'),
@@ -358,6 +373,14 @@ urlpatterns += [
     url(r'^api/download_channel_csv/$', admin_views.download_channel_csv, name='download_channel_csv'),
     url(r'^api/download_channel_pdf/$', admin_views.download_channel_pdf, name='download_channel_pdf'),
     url(r'^api/get_channel_kind_count/(?P<channel_id>[^/]+)$', admin_views.get_channel_kind_count, name='get_channel_kind_count'),
+]
+
+# Add story endpoints
+urlpatterns += [
+    url(r'^api/get_stories/(?P<channel_id>[^/]+)$', story_views.get_stories, name='get_stories'),
+    url(r'^api/get_story_items/(?P<story_id>[^/]+)$', story_views.get_story_items, name='get_story_items'),
+    url(r'^api/zip_story/(?P<story_id>[^/]+)/(?P<parent_id>[^/]{32})$', story_views.zip_story, name='zip_story'),
+    url(r'^channels/(?P<channel_id>[^/]{32})/stories/(?P<story_id>[0-9+])', story_views.channel_story, name='channel_story'),
 ]
 
 urlpatterns += [url(r'^jsreverse/$', django_js_reverse_views.urls_js, name='js_reverse')]
