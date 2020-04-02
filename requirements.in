@@ -2,11 +2,11 @@ django-cte==1.1.4
 django-mptt==0.9.1
 django-filter==1.0.4
 django-pg-utils==0.1.5
-djangorestframework==3.8.2
+djangorestframework==3.9.1
 pdfkit==0.6.1
 psycopg2-binary==2.7.4
 psutil==3.1.1
-django-js-reverse==0.6.1
+django-js-reverse==0.9.1
 django-registration==2.1.2
 django-hashedfilenamestorage==1.0.0
 djangorestframework-bulk==0.2.1
@@ -19,7 +19,6 @@ django-mailgun==0.9.1
 pressurecooker>=0.0.24
 porter2stemmer==1.0
 django-postmark==0.1.6
-ddtrace==0.8.0
 jsonfield==2.0.2
 newrelic>=2.86.3.70
 celery==4.1.1
