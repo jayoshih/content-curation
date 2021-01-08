@@ -223,9 +223,9 @@
             align-center
             row
           >
-            <VFlex class="source-thumbnail">
+            <div class="source-thumbnail">
               <Thumbnail :src="channel.thumbnail" />
-            </VFlex>
+            </div>
             <VFlex v-if="libraryMode" class="font-weight-bold notranslate px-4 subheading">
               {{ channel.name }}
             </VFlex>
@@ -488,7 +488,6 @@
       }
     }
     .source-thumbnail {
-      flex-grow: 0;
       width: 150px;
       border: 1px solid var(--v-grey-lighten3);
     }
